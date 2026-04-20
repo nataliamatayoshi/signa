@@ -817,6 +817,7 @@ clock();
 // --- MC SYSTEM — sin API, textos pre-escritos ---
 let mcSpeaking = false;
 let mcUtterance = null;
+let mcStartTime = 0;
 
 const MC_LINES = {
   rephlex: [
@@ -944,6 +945,7 @@ function triggerMC(auto = false) {
     const utt = new SpeechSynthesisUtterance(text);
 
     const speak = () => {
+      mcStartTime = Date.now();
       applyVoiceProfile(utt, currentVoice);
       utt.onend = () => {
         mcSpeaking = false;
@@ -951,7 +953,15 @@ function triggerMC(auto = false) {
           panel.style.display = 'none';
           dot.style.animation = '';
           unmutePlayer();
-        }, 1000);
+          // Reanudar video (speechSynthesis puede pausarlo en algunos navegadores)
+          if (filteredTracks.length && dailyPlaylist.length) {
+            const track = filteredTracks[dailyPlaylist[currentIdx]];
+            if (track) {
+              const player = document.getElementById('yt-player');
+              player.src = `https://www.youtube.com/embed/${track.id}?autoplay=1&controls=1&rel=0&modestbranding=1&iv_load_policy=3&start=${Math.max(0, Math.floor((Date.now() - mcStartTime) / 1000))}`;
+            }
+          }
+        }, 500);
       };
       utt.onerror = () => { mcSpeaking = false; unmutePlayer(); };
       speechSynthesis.speak(utt);
