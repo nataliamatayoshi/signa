@@ -22,309 +22,92 @@
     --vt: 'VT323', monospace;
     --space: 'Space Mono', monospace;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--green);
-    font-family: var(--mono);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* SCANLINES */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
-    pointer-events: none; z-index: 999;
-  }
-
-  /* NOISE overlay */
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 998; opacity: 0.4;
-  }
-
-  /* HEADER */
-  .header {
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: relative;
-  }
-  .header::after {
-    content: '';
-    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--green), transparent);
-    opacity: 0.4;
-  }
-
-  .logo {
-    font-family: var(--vt);
-    font-size: 36px;
-    letter-spacing: 4px;
-    color: var(--green);
-    text-shadow: 0 0 20px rgba(192,132,252,0.6), 0 0 40px rgba(192,132,252,0.2);
-    animation: flicker 8s infinite;
-  }
+  body { background: var(--bg); color: var(--green); font-family: var(--mono); min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px); pointer-events: none; z-index: 999; }
+  .header { border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--green), transparent); opacity: 0.4; }
+  .logo { font-family: var(--vt); font-size: 36px; letter-spacing: 4px; color: var(--green); text-shadow: 0 0 20px rgba(192,132,252,0.6), 0 0 40px rgba(192,132,252,0.2); animation: flicker 8s infinite; }
   .logo span { color: var(--amber); }
-
-  @keyframes flicker {
-    0%,95%,97%,100% { opacity: 1; }
-    96% { opacity: 0.7; }
-    96.5% { opacity: 1; }
-  }
-
+  @keyframes flicker { 0%,95%,97%,100% { opacity: 1; } 96% { opacity: 0.7; } 96.5% { opacity: 1; } }
   .header-right { text-align: right; font-size: 11px; color: var(--muted); line-height: 1.8; }
-  .live-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    color: var(--red); font-size: 12px; font-family: var(--space);
-    letter-spacing: 0.1em;
-  }
-  .live-dot {
-    width: 7px; height: 7px; border-radius: 50%; background: var(--red);
-    animation: pulse 1.2s infinite;
-  }
+  .live-badge { display: inline-flex; align-items: center; gap: 6px; color: var(--red); font-size: 12px; font-family: var(--space); letter-spacing: 0.1em; }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: pulse 1.2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
-
-  /* MAIN LAYOUT */
-  .layout {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    min-height: calc(100vh - 70px);
-  }
-
-  /* SIDEBAR */
-  .sidebar {
-    border-right: 1px solid var(--border);
-    padding: 20px 0;
-    overflow-y: auto;
-  }
-
-  .sidebar-title {
-    font-size: 10px; letter-spacing: 0.15em; color: var(--muted);
-    padding: 0 18px; margin-bottom: 10px; text-transform: uppercase;
-  }
-
-  .genre-btn {
-    width: 100%; padding: 12px 18px;
-    background: none; border: none;
-    color: var(--muted); font-family: var(--mono); font-size: 13px;
-    cursor: pointer; text-align: left;
-    display: flex; align-items: center; justify-content: space-between;
-    border-left: 2px solid transparent;
-    transition: all 0.15s;
-  }
+  .layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 70px); }
+  .sidebar { border-right: 1px solid var(--border); padding: 16px 0; overflow-y: auto; max-height: calc(100vh - 70px); }
+  .sidebar-title { font-size: 10px; letter-spacing: 0.15em; color: var(--muted); padding: 0 14px; margin: 10px 0 6px; text-transform: uppercase; }
+  .genre-btn { width: 100%; padding: 8px 14px; background: none; border: none; color: var(--muted); font-family: var(--mono); font-size: 11px; cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; border-left: 2px solid transparent; transition: all 0.15s; }
   .genre-btn:hover { color: var(--green); background: var(--green-dim); }
-  .genre-btn.active {
-    color: var(--green); background: var(--green-dim);
-    border-left-color: var(--green);
-  }
-  .genre-btn .count {
-    font-size: 10px; color: var(--muted);
-    background: rgba(255,255,255,0.04);
-    padding: 2px 6px; border-radius: 3px;
-  }
-  .genre-btn.active .count { color: var(--green-mid); }
-
-  .sidebar-sep {
-    height: 1px; background: var(--border); margin: 12px 0;
-  }
-
-  /* MAIN PLAYER */
-  .main { padding: 24px; overflow-y: auto; }
-
-  /* NOW PLAYING */
-  .now-playing {
-    border: 1px solid var(--border);
-    background: var(--green-dim);
-    border-radius: 4px;
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    display: flex; align-items: flex-start; gap: 16px;
-  }
-  .now-icon { font-family: var(--vt); font-size: 28px; color: var(--amber); flex-shrink: 0; line-height: 1; margin-top: 2px; }
+  .genre-btn.active { color: var(--green); background: var(--green-dim); border-left-color: var(--green); }
+  .sidebar-sep { height: 1px; background: var(--border); margin: 10px 0; }
+  .main { padding: 20px; overflow-y: auto; }
+  .now-playing { border: 1px solid var(--border); background: var(--green-dim); border-radius: 4px; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 14px; }
+  .now-icon { font-family: var(--vt); font-size: 24px; color: var(--amber); flex-shrink: 0; line-height: 1; margin-top: 2px; }
   .now-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
-  .now-title { font-size: 15px; color: var(--white); line-height: 1.4; }
+  .now-title { font-size: 14px; color: var(--white); line-height: 1.4; }
   .now-meta { font-size: 11px; color: var(--green-mid); margin-top: 4px; }
-
-  /* PLAYER EMBED */
-  .player-wrap {
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 24px;
-    background: #000;
-    position: relative;
-  }
-  .player-wrap iframe {
-    display: block; width: 100%; height: 200px; border: none;
-  }
-  .player-overlay {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.85);
-    flex-direction: column; gap: 12px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
+  .freq-bar { height: 36px; margin-bottom: 14px; display: flex; align-items: flex-end; gap: 2px; overflow: hidden; }
+  .freq-col { flex: 1; background: var(--green); opacity: 0.6; border-radius: 1px 1px 0 0; animation: freq 1.5s ease-in-out infinite alternate; }
+  @keyframes freq { from { height: 20%; } to { height: 90%; } }
+  .player-wrap { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 14px; background: #000; position: relative; }
+  .player-wrap iframe { display: block; width: 100%; height: 200px; border: none; }
+  .player-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); flex-direction: column; gap: 12px; cursor: pointer; transition: opacity 0.2s; }
   .player-overlay.hidden { opacity: 0; pointer-events: none; }
-  .play-big {
-    width: 60px; height: 60px; border-radius: 50%;
-    border: 2px solid var(--green);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-    transition: all 0.15s;
-    color: var(--green);
-  }
-  .play-big:hover { background: var(--green-dim); transform: scale(1.05); }
-  .overlay-text { font-size: 13px; color: var(--green-mid); }
-
-  /* TRACKLIST */
-  .section-title {
-    font-size: 10px; letter-spacing: 0.12em; color: var(--muted);
-    text-transform: uppercase; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-  .track-list { display: flex; flex-direction: column; gap: 4px; }
-  .track-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 14px; border-radius: 3px;
-    cursor: pointer; border: 1px solid transparent;
-    transition: all 0.12s;
-  }
-  .track-item:hover { background: var(--green-dim); border-color: var(--border); }
-  .track-item.playing {
-    background: var(--green-dim); border-color: var(--border);
-    border-left: 2px solid var(--green);
-  }
-  .track-num {
-    font-size: 11px; color: var(--muted); width: 20px; text-align: right; flex-shrink: 0;
-  }
-  .track-item.playing .track-num { color: var(--green); }
-  .track-info { flex: 1; min-width: 0; }
-  .track-name { font-size: 13px; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .track-item.playing .track-name { color: var(--green); }
-  .track-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .track-duration { font-size: 11px; color: var(--muted); flex-shrink: 0; font-family: var(--space); }
-
-  /* EQ BARS (playing indicator) */
-  .eq { display: flex; align-items: flex-end; gap: 2px; height: 14px; width: 14px; flex-shrink: 0; }
-  .eq-bar {
-    width: 3px; background: var(--green); border-radius: 1px;
-    animation: eq-anim 0.8s ease-in-out infinite alternate;
-  }
-  .eq-bar:nth-child(1) { animation-delay: 0s; }
-  .eq-bar:nth-child(2) { animation-delay: 0.2s; }
-  .eq-bar:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes eq-anim {
-    from { height: 3px; }
-    to { height: 14px; }
-  }
-  .eq.hidden { display: none; }
-
-  /* FREQ DISPLAY */
-  .freq-bar {
-    height: 40px; margin-bottom: 20px;
-    display: flex; align-items: flex-end; gap: 2px;
-    overflow: hidden;
-  }
-  .freq-col {
-    flex: 1; background: var(--green);
-    opacity: 0.6; border-radius: 1px 1px 0 0;
-    animation: freq 1.5s ease-in-out infinite alternate;
-  }
-  @keyframes freq {
-    from { height: 20%; }
-    to { height: 90%; }
-  }
-
-  /* WAVEFORM */
-  canvas { width: 100%; height: 40px; display: block; margin-bottom: 16px; opacity: 0.6; }
-
-  /* GENRE TAG */
-  .genre-tag {
-    display: inline-block; padding: 3px 8px;
-    border: 1px solid var(--border); border-radius: 2px;
-    font-size: 10px; color: var(--muted); letter-spacing: 0.08em;
-    margin-right: 4px; margin-bottom: 4px; text-transform: uppercase;
-  }
-
-  /* FOOTER TICKER */
-  .ticker-wrap {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    border-top: 1px solid var(--border);
-    background: var(--bg);
-    padding: 8px 0;
-    overflow: hidden;
-    z-index: 100;
-  }
-  .ticker {
-    display: flex; gap: 60px;
-    animation: scroll-left 40s linear infinite;
-    white-space: nowrap;
-  }
-  @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  .ticker-item { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
-  .ticker-item span { color: var(--green-mid); }
-
-  /* AUTOPLAY CONTROLS */
-  .controls {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 20px;
-  }
-  .ctrl-btn {
-    padding: 7px 14px; border: 1px solid var(--border);
-    background: none; color: var(--green); font-family: var(--mono); font-size: 12px;
-    cursor: pointer; border-radius: 2px; transition: all 0.12s; letter-spacing: 0.05em;
-  }
+  .play-big { width: 56px; height: 56px; border-radius: 50%; border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--green); transition: all 0.15s; }
+  .play-big:hover { background: var(--green-dim); }
+  .overlay-text { font-size: 12px; color: var(--green-mid); }
+  .controls { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .ctrl-btn { padding: 6px 12px; border: 1px solid var(--border); background: none; color: var(--green); font-family: var(--mono); font-size: 11px; cursor: pointer; border-radius: 2px; transition: all 0.12s; letter-spacing: 0.05em; }
   .ctrl-btn:hover { background: var(--green-dim); }
   .ctrl-btn.active { background: var(--green-dim); border-color: var(--green); }
   .ctrl-label { font-size: 11px; color: var(--muted); }
-
-  /* VOICE BUTTONS */
-  .voice-btn {
-    padding: 4px 10px; border: 1px solid var(--border);
-    background: none; color: var(--muted); font-family: var(--mono);
-    font-size: 10px; cursor: pointer; border-radius: 2px;
-    letter-spacing: 0.06em; transition: all 0.12s;
-  }
+  .voice-btn { padding: 4px 9px; border: 1px solid var(--border); background: none; color: var(--muted); font-family: var(--mono); font-size: 10px; cursor: pointer; border-radius: 2px; letter-spacing: 0.06em; transition: all 0.12s; }
   .voice-btn:hover { color: var(--amber); border-color: var(--amber); }
   .voice-btn.active { color: var(--amber); border-color: var(--amber); background: rgba(232,121,249,0.08); }
-
-  /* MOBILE */
-  @media (max-width: 700px) {
-    .layout { grid-template-columns: 1fr; }
-    .sidebar { border-right: none; border-bottom: 1px solid var(--border); padding: 12px 0; }
-    .genre-btn { padding: 10px 14px; font-size: 12px; }
-    .main { padding: 16px; }
-    .logo { font-size: 26px; }
-  }
+  .section-title { font-size: 10px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .track-list { display: flex; flex-direction: column; gap: 3px; }
+  .track-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 3px; cursor: pointer; border: 1px solid transparent; transition: all 0.12s; }
+  .track-item:hover { background: var(--green-dim); border-color: var(--border); }
+  .track-item.playing { background: var(--green-dim); border-color: var(--border); border-left: 2px solid var(--green); }
+  .track-num { font-size: 11px; color: var(--muted); width: 18px; text-align: right; flex-shrink: 0; }
+  .track-item.playing .track-num { color: var(--green); }
+  .track-info { flex: 1; min-width: 0; }
+  .track-name { font-size: 12px; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .track-item.playing .track-name { color: var(--green); }
+  .track-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .track-duration { font-size: 11px; color: var(--muted); flex-shrink: 0; font-family: var(--space); }
+  .eq { display: flex; align-items: flex-end; gap: 2px; height: 12px; width: 12px; flex-shrink: 0; }
+  .eq-bar { width: 3px; background: var(--green); border-radius: 1px; animation: eq-anim 0.8s ease-in-out infinite alternate; }
+  .eq-bar:nth-child(1) { animation-delay: 0s; }
+  .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+  .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes eq-anim { from { height: 3px; } to { height: 12px; } }
+  .eq.hidden { display: none; }
+  .ticker-wrap { position: fixed; bottom: 0; left: 0; right: 0; border-top: 1px solid var(--border); background: var(--bg); padding: 7px 0; overflow: hidden; z-index: 100; }
+  .ticker { display: flex; gap: 60px; animation: scroll-left 40s linear infinite; white-space: nowrap; }
+  @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .ticker-item { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
+  .ticker-item span { color: var(--green-mid); }
+  @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } .sidebar { border-right: none; border-bottom: 1px solid var(--border); } .logo { font-size: 26px; } }
 </style>
 </head>
 <body>
 
 <div class="header">
   <div>
-    <div class="logo">SIGNA</div>
+    <div class="logo">SIGNA<span>.</span></div>
     <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-top:2px;">90s UNDERGROUND ELECTRONIC RADIO</div>
   </div>
   <div class="header-right">
     <div class="live-badge"><div class="live-dot"></div> ON AIR 24/7</div>
-    <div style="margin-top:4px;">REPHLEX · JUNGLE · ACID · BREAKBEAT · FOOTWORK</div>
+    <div style="margin-top:4px;">REPHLEX · JUNGLE · ACID · TECHNO · ELECTRO · AMBIENT</div>
     <div id="clock" style="color:var(--green);margin-top:2px;"></div>
   </div>
 </div>
 
 <div class="layout">
-
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-title">Género</div>
     <button class="genre-btn active" onclick="setFilter('genre','all')" id="fg-all">TODOS</button>
@@ -336,7 +119,6 @@
     <button class="genre-btn" onclick="setFilter('genre','techno')" id="fg-techno">TECHNO</button>
     <button class="genre-btn" onclick="setFilter('genre','electro')" id="fg-electro">ELECTRO</button>
     <button class="genre-btn" onclick="setFilter('genre','ambient')" id="fg-ambient">AMBIENT / DUB TECHNO</button>
-
     <div class="sidebar-sep"></div>
     <div class="sidebar-title">Sello</div>
     <button class="genre-btn active" onclick="setFilter('label','all')" id="fl-all">TODOS</button>
@@ -344,6 +126,7 @@
     <button class="genre-btn" onclick="setFilter('label','warp')" id="fl-warp">WARP</button>
     <button class="genre-btn" onclick="setFilter('label','planet_mu')" id="fl-planet_mu">PLANET MU</button>
     <button class="genre-btn" onclick="setFilter('label','trax')" id="fl-trax">TRAX RECORDS</button>
+    <button class="genre-btn" onclick="setFilter('label','rs_records')" id="fl-rs_records">R&S RECORDS</button>
     <button class="genre-btn" onclick="setFilter('label','reinforced')" id="fl-reinforced">REINFORCED</button>
     <button class="genre-btn" onclick="setFilter('label','metalheadz')" id="fl-metalheadz">METALHEADZ</button>
     <button class="genre-btn" onclick="setFilter('label','moving_shadow')" id="fl-moving_shadow">MOVING SHADOW</button>
@@ -352,24 +135,18 @@
     <button class="genre-btn" onclick="setFilter('label','teklife')" id="fl-teklife">TEKLIFE / JUKE</button>
     <button class="genre-btn" onclick="setFilter('label','ur')" id="fl-ur">UNDERGROUND RES.</button>
     <button class="genre-btn" onclick="setFilter('label','tresor')" id="fl-tresor">TRESOR</button>
-    <button class="genre-btn" onclick="setFilter('label','basic_channel')" id="fl-basic_channel">BASIC CHANNEL</button>
     <button class="genre-btn" onclick="setFilter('label','chain_reaction')" id="fl-chain_reaction">CHAIN REACTION</button>
     <button class="genre-btn" onclick="setFilter('label','submerge')" id="fl-submerge">SUBMERGE</button>
-    <button class="genre-btn" onclick="setFilter('label','direct_beat')" id="fl-direct_beat">DIRECT BEAT</button>
     <button class="genre-btn" onclick="setFilter('label','kranky')" id="fl-kranky">KRANKY</button>
-
     <div class="sidebar-sep"></div>
-    <div class="sidebar-title" id="filter-result-label">Mostrando todos</div>
-    <div style="padding:0 18px;font-size:11px;color:var(--muted);line-height:1.8;">
-      Música vía YouTube.<br>Todo pre-2000.<br><br>
+    <div class="sidebar-title" id="filter-result-label">Cargando...</div>
+    <div style="padding:0 14px;font-size:10px;color:var(--muted);line-height:1.8;margin-top:4px;">
+      Música vía YouTube.<br>Todo pre-2000.<br>
       <span style="color:var(--green-mid);">Sin registro · Gratis · 24/7</span>
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main" style="padding-bottom:60px;">
-
-    <!-- NOW PLAYING -->
     <div class="now-playing">
       <div class="now-icon">▶</div>
       <div>
@@ -378,21 +155,14 @@
         <div class="now-meta" id="np-meta"></div>
       </div>
     </div>
-
-    <!-- FREQ VISUALIZER -->
-    <div class="freq-bar" id="freq-bar" style="display:none;">
-    </div>
-
-    <!-- PLAYER -->
-    <div class="player-wrap" id="player-wrap">
+    <div class="freq-bar" id="freq-bar" style="display:none;"></div>
+    <div class="player-wrap">
       <iframe id="yt-player" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       <div class="player-overlay" id="overlay">
         <div class="play-big" onclick="startRadio()">▶</div>
         <div class="overlay-text">Elige un género y presiona play</div>
       </div>
     </div>
-
-    <!-- CONTROLS -->
     <div class="controls">
       <button class="ctrl-btn" onclick="prevTrack()">◀ PREV</button>
       <button class="ctrl-btn" onclick="nextTrack()">NEXT ▶</button>
@@ -400,8 +170,6 @@
       <button class="ctrl-btn" id="btn-mc" onclick="triggerMC()" style="color:var(--amber);border-color:var(--amber);">◈ MC</button>
       <span class="ctrl-label" id="ctrl-info"></span>
     </div>
-
-    <!-- VOICE SELECTOR -->
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
       <span style="font-size:10px;color:var(--muted);letter-spacing:0.08em;margin-right:2px;">VOZ MC:</span>
       <button class="voice-btn active" id="vbtn-unit1" onclick="setVoice('unit1')">UNIT-1</button>
@@ -409,117 +177,88 @@
       <button class="voice-btn" id="vbtn-glitch" onclick="setVoice('glitch')">GLITCH</button>
       <button class="voice-btn" id="vbtn-broadcast" onclick="setVoice('broadcast')">BROADCAST</button>
     </div>
-
-    <!-- MC PANEL -->
-    <div id="mc-panel" style="display:none;margin-bottom:16px;border:1px solid var(--amber);border-radius:4px;overflow:hidden;">
-      <div style="background:rgba(232,121,249,0.08);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(232,121,249,0.2);">
+    <div id="mc-panel" style="display:none;margin-bottom:14px;border:1px solid var(--amber);border-radius:4px;overflow:hidden;">
+      <div style="background:rgba(232,121,249,0.08);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(232,121,249,0.2);">
         <div style="display:flex;align-items:center;gap:8px;">
-          <div id="mc-dot" style="width:8px;height:8px;border-radius:50%;background:var(--amber);"></div>
-          <span style="font-size:11px;color:var(--amber);letter-spacing:0.1em;">MC EN EL AIRE · <span id="mc-voice-label">UNIT-1</span></span>
+          <div id="mc-dot" style="width:7px;height:7px;border-radius:50%;background:var(--amber);"></div>
+          <span style="font-size:10px;color:var(--amber);letter-spacing:0.1em;">MC EN EL AIRE · <span id="mc-voice-label">UNIT-1</span></span>
         </div>
-        <button onclick="stopMC()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--mono);">✕ CORTAR</button>
+        <button onclick="stopMC()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:var(--mono);">✕ CORTAR</button>
       </div>
-      <div id="mc-text" style="padding:14px 16px;font-size:13px;color:var(--white);line-height:1.8;font-family:var(--mono);min-height:60px;"></div>
+      <div id="mc-text" style="padding:12px 14px;font-size:12px;color:var(--white);line-height:1.8;font-family:var(--mono);min-height:50px;"></div>
     </div>
-
-    <!-- TRACKLIST -->
     <div class="section-title">Tracklist</div>
     <div class="track-list" id="tracklist"></div>
-
   </div>
 </div>
 
-<!-- TICKER -->
 <div class="ticker-wrap">
-  <div class="ticker" id="ticker">
-    <span class="ticker-item">REPHLEX RECORDS · <span>APHEX TWIN · LUKE VIBERT · µ-ZIQ · BOGDAN RACZYNSKI</span></span>
-    <span class="ticker-item">JUNGLE · <span>REINFORCED RECORDS · METALHEADZ · MOVING SHADOW · 1993-1997</span></span>
+  <div class="ticker">
+    <span class="ticker-item">REPHLEX · <span>APHEX TWIN · LUKE VIBERT · µ-ZIQ · BRAINDANCE</span></span>
+    <span class="ticker-item">JUNGLE · <span>REINFORCED · METALHEADZ · MOVING SHADOW · 1993-1997</span></span>
     <span class="ticker-item">ACID HOUSE · <span>PHUTURE · DJ PIERRE · TRAX RECORDS · CHICAGO 1987</span></span>
-    <span class="ticker-item">BREAKBEAT · <span>SUBURBAN BASE · SHUT UP AND DANCE · HARDCORE RAVE · UK 1991-1994</span></span>
-    <span class="ticker-item">FOOTWORK · <span>RP BOO · TEKLIFE · CHICAGO JUKE · 160BPM · PURE HEAT</span></span>
-    <span class="ticker-item">REPHLEX RECORDS · <span>APHEX TWIN · LUKE VIBERT · µ-ZIQ · BOGDAN RACZYNSKI</span></span>
-    <span class="ticker-item">JUNGLE · <span>REINFORCED RECORDS · METALHEADZ · MOVING SHADOW · 1993-1997</span></span>
+    <span class="ticker-item">TECHNO · <span>UNDERGROUND RESISTANCE · JEFF MILLS · TRESOR · DETROIT</span></span>
+    <span class="ticker-item">ELECTRO · <span>DREXCIYA · EGYPTIAN LOVER · DOPPLEREFFEKT · SUBMERGE</span></span>
+    <span class="ticker-item">AMBIENT · <span>BASIC CHANNEL · CHAIN REACTION · APHEX TWIN · GAS</span></span>
+    <span class="ticker-item">REPHLEX · <span>APHEX TWIN · LUKE VIBERT · µ-ZIQ · BRAINDANCE</span></span>
+    <span class="ticker-item">JUNGLE · <span>REINFORCED · METALHEADZ · MOVING SHADOW · 1993-1997</span></span>
     <span class="ticker-item">ACID HOUSE · <span>PHUTURE · DJ PIERRE · TRAX RECORDS · CHICAGO 1987</span></span>
-    <span class="ticker-item">BREAKBEAT · <span>SUBURBAN BASE · SHUT UP AND DANCE · HARDCORE RAVE · UK 1991-1994</span></span>
-    <span class="ticker-item">FOOTWORK · <span>RP BOO · TEKLIFE · CHICAGO JUKE · 160BPM · PURE HEAT</span></span>
+    <span class="ticker-item">TECHNO · <span>UNDERGROUND RESISTANCE · JEFF MILLS · TRESOR · DETROIT</span></span>
+    <span class="ticker-item">ELECTRO · <span>DREXCIYA · EGYPTIAN LOVER · DOPPLEREFFEKT · SUBMERGE</span></span>
+    <span class="ticker-item">AMBIENT · <span>BASIC CHANNEL · CHAIN REACTION · APHEX TWIN · GAS</span></span>
   </div>
 </div>
 
 <script>
-// All tracks with genre + label tags for combined filtering
 const ALL_TRACKS = [
   // BRAINDANCE / IDM
-  { title: 'Aphex Twin — Selected Ambient Works 85-92', meta: 'Rephlex / Apollo · 1992', id: 'Xw5AiRVqfqk', dur: '1:14:00', genre: 'braindance', label: 'rephlex', artist: 'Aphex Twin' },
-  { title: 'Aphex Twin — ...I Care Because You Do', meta: 'Warp Records · 1995', id: 'WCc1qjMBFdk', dur: '1:05:00', genre: 'braindance', label: 'warp', artist: 'Aphex Twin' },
+  { title: 'Aphex Twin — Selected Ambient Works 85-92', meta: 'Apollo / R&S · 1992', id: 'Xw5AiRVqfqk', dur: '1:14:00', genre: 'braindance', label: 'rephlex', artist: 'Aphex Twin' },
+  { title: 'Aphex Twin — I Care Because You Do', meta: 'Warp Records · 1995', id: 'WCc1qjMBFdk', dur: '1:05:00', genre: 'braindance', label: 'warp', artist: 'Aphex Twin' },
   { title: 'Aphex Twin — Richard D. James Album', meta: 'Warp Records · 1996', id: 'vMBOBE0aB_E', dur: '33:00', genre: 'braindance', label: 'warp', artist: 'Aphex Twin' },
-  { title: 'Aphex Twin — Classic Tracks Mix 90s', meta: 'Selected Works · 1993-1999', id: 'M9xoTygJMMs', dur: '1:30:00', genre: 'braindance', label: 'rephlex', artist: 'Aphex Twin' },
-  { title: 'Luke Vibert — Plug — Drum n Bass for Papa', meta: 'Rephlex · 1996', id: 'TGBhmtGqVuc', dur: '58:00', genre: 'braindance', label: 'rephlex', artist: 'Luke Vibert' },
-  { title: 'Luke Vibert / Wagon Christ — Throbbing Pouch', meta: 'Rising High · 1995', id: 'Kkx87-1YXGE', dur: '52:00', genre: 'braindance', label: 'rephlex', artist: 'Luke Vibert' },
-  { title: 'µ-Ziq — Lunatic Harness (Full Album)', meta: 'Planet Mu · 1997', id: 'fWHRdBPJsfc', dur: '1:02:00', genre: 'braindance', label: 'planet_mu', artist: 'µ-Ziq' },
+  { title: 'Aphex Twin — Selected Ambient Works Vol. II', meta: 'Warp Records · 1994', id: '7fSPGbEP0ho', dur: '2:38:00', genre: 'braindance', label: 'warp', artist: 'Aphex Twin' },
+  { title: 'Luke Vibert — Drum n Bass for Papa', meta: 'Rephlex · 1996', id: 'TGBhmtGqVuc', dur: '58:00', genre: 'braindance', label: 'rephlex', artist: 'Luke Vibert' },
+  { title: 'µ-Ziq — Lunatic Harness', meta: 'Planet Mu · 1997', id: 'fWHRdBPJsfc', dur: '1:02:00', genre: 'braindance', label: 'planet_mu', artist: 'µ-Ziq' },
   { title: 'Bogdan Raczynski — Samurai Math Beats', meta: 'Rephlex · 1999', id: 'gFuGdPbYCao', dur: '47:00', genre: 'braindance', label: 'rephlex', artist: 'Bogdan Raczynski' },
   // ACID HOUSE
-  { title: 'Phuture — Acid Tracks (Original 1987)', meta: 'Trax Records · 1987', id: 'za-CN_MQeJY', dur: '10:00', genre: 'acid', label: 'trax', artist: 'Phuture' },
+  { title: 'Phuture — Acid Tracks', meta: 'Trax Records · 1987', id: 'za-CN_MQeJY', dur: '10:00', genre: 'acid', label: 'trax', artist: 'Phuture' },
   { title: 'Classic Acid House Mix 1987-1991', meta: 'Trax Records / DJ International', id: '7IHZmakyAcU', dur: '1:00:00', genre: 'acid', label: 'trax', artist: 'Various' },
-  { title: 'Acid House Classics — Full Mix', meta: 'Chicago / UK · 1988-1993', id: 'GNLqDFJ4H5k', dur: '1:15:00', genre: 'acid', label: 'trax', artist: 'Various' },
   { title: 'Larry Heard — Can You Feel It', meta: 'Trax Records · 1986', id: 'qrHWqFPBzlA', dur: '7:00', genre: 'acid', label: 'trax', artist: 'Larry Heard' },
-  { title: 'Acid House Party — Warp Records Early Years', meta: 'Warp · Sheffield UK · 1989-1992', id: 'EkFNz68XSNE', dur: '55:00', genre: 'acid', label: 'warp', artist: 'Various' },
-  { title: 'DJ Pierre — Wild Pitch Mix (Acid House)', meta: 'Classic Sets · 1989-1993', id: 'Rc_7B0Oevlo', dur: '1:00:00', genre: 'acid', label: 'trax', artist: 'DJ Pierre' },
-  { title: 'Acid House Chicago Classics Mix', meta: 'Trax / DJ International · 1986-1991', id: 'fJIgKjFnTls', dur: '1:20:00', genre: 'acid', label: 'trax', artist: 'Various' },
+  { title: 'DJ Pierre — Wild Pitch Mix', meta: 'Classic Sets · 1989-1993', id: 'Rc_7B0Oevlo', dur: '1:00:00', genre: 'acid', label: 'trax', artist: 'DJ Pierre' },
+  { title: 'Joey Beltram — Energy Flash', meta: 'R&S Records · Belgium · 1990', id: 'n2Mq1E5PoXA', dur: '8:00', genre: 'acid', label: 'rs_records', artist: 'Joey Beltram' },
   // JUNGLE / D&B
   { title: 'Old School Jungle Mix 1993-1995', meta: 'Reinforced Records / Moving Shadow', id: 'byoSRf-8MPo', dur: '1:00:00', genre: 'jungle', label: 'reinforced', artist: 'Various' },
-  { title: 'Goldie — Timeless (Full Album)', meta: 'Metalheadz · 1995', id: 'Jm7ZJCM7VM0', dur: '1:37:00', genre: 'jungle', label: 'metalheadz', artist: 'Goldie' },
+  { title: 'Goldie — Timeless', meta: 'Metalheadz · 1995', id: 'Jm7ZJCM7VM0', dur: '1:37:00', genre: 'jungle', label: 'metalheadz', artist: 'Goldie' },
   { title: 'Reinforced Records Classics Mix', meta: '4hero · Marc Mac · Dego · 1992-1996', id: 'LlFB3P1SFnk', dur: '1:00:00', genre: 'jungle', label: 'reinforced', artist: 'Various' },
-  { title: 'Old School Jungle Hardcore Mix 1993', meta: 'Suburban Base / Reinforced · UK Rave', id: 'GVbewUhKAsc', dur: '1:15:00', genre: 'jungle', label: 'suburban_base', artist: 'Various' },
-  { title: 'Moving Shadow Records Mix', meta: 'Omni Trio / Rob Playford · 1993-1997', id: 'dFb5fXxSJlc', dur: '55:00', genre: 'jungle', label: 'moving_shadow', artist: 'Various' },
+  { title: 'Moving Shadow Records Mix', meta: 'Omni Trio · 1993-1997', id: 'dFb5fXxSJlc', dur: '55:00', genre: 'jungle', label: 'moving_shadow', artist: 'Various' },
   { title: 'Grooverider — Prototype Years Mix', meta: 'Metalheadz · 1994-1996', id: '09tSg0zL2cA', dur: '1:00:00', genre: 'jungle', label: 'metalheadz', artist: 'Grooverider' },
   { title: 'Shut Up and Dance Records Mix', meta: 'UK Jungle Pioneers · 1991-1995', id: 'j3EKXGnzaS4', dur: '1:10:00', genre: 'jungle', label: 'shut_up', artist: 'Various' },
-  { title: 'LTJ Bukem — Logical Progression Mix', meta: 'Good Looking Records · 1995-1996', id: 'dCNzBVmBBUQ', dur: '1:00:00', genre: 'jungle', label: 'moving_shadow', artist: 'LTJ Bukem' },
+  { title: 'LTJ Bukem — Logical Progression Mix', meta: 'Good Looking Records · 1996', id: 'dCNzBVmBBUQ', dur: '1:00:00', genre: 'jungle', label: 'moving_shadow', artist: 'LTJ Bukem' },
   // BREAKBEAT
-  { title: 'UK Hardcore Rave Mix 1991-1993', meta: 'Suburban Base / Moving Shadow', id: '7GWAbKLZzZ0', dur: '1:00:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
-  { title: 'Breakbeat Hardcore Classics 1992', meta: 'UK Rave Scene · Essential Mix', id: 'iNMiTGNOsZo', dur: '1:15:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
+  { title: 'Breakbeat Hardcore Classics 1992', meta: 'UK Rave Scene', id: 'iNMiTGNOsZo', dur: '1:15:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
   { title: 'Prodigy — Music for the Jilted Generation', meta: 'XL Recordings · 1994', id: 'b0Wm1LrXFuI', dur: '1:10:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Prodigy' },
-  { title: 'Old School Breakbeat Mix 1990-1994', meta: 'UK Rave / Hardcore · Classic Breaks', id: 'pFkI-e2vb2Q', dur: '1:00:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
-  { title: 'Amen Break History Mix', meta: 'The break that changed everything · 1991-1996', id: 'V48YBmSSuss', dur: '55:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
-  { title: 'Suburban Base Records Classic Mix', meta: 'Essex UK · 1991-1995', id: 'fJIgKjFnTls', dur: '1:20:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
-  { title: 'Shut Up and Dance — Hardcore Mix', meta: 'Shut Up and Dance Records · 1991-1993', id: 'j3EKXGnzaS4', dur: '1:00:00', genre: 'breakbeat', label: 'shut_up', artist: 'Various' },
+  { title: 'Amen Break History Mix', meta: '1991-1996', id: 'V48YBmSSuss', dur: '55:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
   // JUKE / FOOTWORK
-  { title: 'Chicago Juke Classics — Early Footwork', meta: 'Chicago South Side · 1990s', id: 'N-1yM7RB2To', dur: '1:00:00', genre: 'footwork', label: 'teklife', artist: 'Various' },
-  { title: 'RP Boo — Classics & Rarities Mix', meta: 'Chicago Footwork Pioneer · 1990s', id: 'nxLQAfmpOZs', dur: '45:00', genre: 'footwork', label: 'teklife', artist: 'RP Boo' },
-  { title: 'Chicago Ghetto House Mix 1990s', meta: 'The roots of footwork · DJ Deeon era', id: 'kwBBEijKVDY', dur: '1:00:00', genre: 'footwork', label: 'teklife', artist: 'Various' },
+  { title: 'RP Boo — Beats In Space', meta: 'Chicago Footwork · 2023', id: 'vaA0gmfoOtc', dur: '1:00:00', genre: 'footwork', label: 'teklife', artist: 'RP Boo' },
+  { title: 'RP Boo — Against The Clock', meta: 'Fact Magazine · Chicago', id: '-lO99FSjwjg', dur: '10:00', genre: 'footwork', label: 'teklife', artist: 'RP Boo' },
   { title: 'Classic Juke Music Chicago Vol.1', meta: 'Ghetto House · 160BPM', id: 'Ol-4ygIEYh4', dur: '55:00', genre: 'footwork', label: 'teklife', artist: 'Various' },
-  { title: 'Early Chicago Footwork & Juke Mix', meta: 'Pre-2000 · Underground Chicago', id: 'V9m-tPNzEj4', dur: '1:00:00', genre: 'footwork', label: 'teklife', artist: 'Various' },
-  { title: 'Ghetto House Classics — Chicago 1990s', meta: 'DJ Rashad / Teklife roots · Early sound', id: 'fGgjBBLxmX4', dur: '50:00', genre: 'footwork', label: 'teklife', artist: 'Various' },
   // TECHNO
-  { title: 'Underground Resistance — Interstellar Fugitives Mix', meta: 'Underground Resistance · Detroit · 1998', id: 'MBFxu5_9XT0', dur: '1:00:00', genre: 'techno', label: 'ur', artist: 'Underground Resistance' },
-  { title: 'Jeff Mills — Live at Rex Club (Classic Set)', meta: 'Purpose Maker · Paris · 1994', id: 'Yer8-4RKQDI', dur: '1:00:00', genre: 'techno', label: 'purpose_maker', artist: 'Jeff Mills' },
-  { title: 'Surgeon — Classic Detroit Techno Mix', meta: 'Downwards Records · Birmingham · 1996', id: 'a3pz0INTqx8', dur: '1:00:00', genre: 'techno', label: 'downwards', artist: 'Surgeon' },
-  { title: 'Carl Craig — Innerzone Orchestra Mix', meta: 'Planet E · Detroit · 1994-1999', id: '5A5HR3e8Hgc', dur: '55:00', genre: 'techno', label: 'planet_e', artist: 'Carl Craig' },
-  { title: 'Detroit Techno Classics — UR, Mills, Craig', meta: 'Motor City Records · 1991-1998', id: 'h6C6fIJzCbU', dur: '1:15:00', genre: 'techno', label: 'ur', artist: 'Various' },
-  { title: 'Drexciya — Journey of the Deep Sea Dweller', meta: 'Tresor Records · Detroit · 1994', id: 'hCFaHGjbMDU', dur: '58:00', genre: 'techno', label: 'tresor', artist: 'Drexciya' },
-  { title: 'Robert Hood — Minimal Nation (Full Album)', meta: 'M-Plant · Detroit · 1994', id: 'XJzDMJNlBCg', dur: '1:05:00', genre: 'techno', label: 'ur', artist: 'Robert Hood' },
-  { title: 'Tresor Records 90s Classics Mix', meta: 'Berlin / Detroit · Tresor · 1992-1999', id: 'RqyYLCyOYkE', dur: '1:20:00', genre: 'techno', label: 'tresor', artist: 'Various' },
-  { title: 'Claude Young — Concept One Records Mix', meta: 'Detroit Techno · 1993-1998', id: 'kP2_bHxpjtw', dur: '55:00', genre: 'techno', label: 'tresor', artist: 'Claude Young' },
-  { title: 'Joey Beltram — Energy Flash (Classic Mix)', meta: 'R&S Records · Belgium · 1990', id: 'n2Mq1E5PoXA', dur: '8:00', genre: 'techno', label: 'rs_records', artist: 'Joey Beltram' },
+  { title: 'Underground Resistance — Galaxy 2 Galaxy', meta: 'UR · Detroit · 1993', id: 'cPLMGPQVoqA', dur: '46:00', genre: 'techno', label: 'ur', artist: 'Underground Resistance' },
+  { title: 'Robert Hood — Minimal Nation', meta: 'M-Plant · Detroit · 1994', id: 'XJzDMJNlBCg', dur: '1:05:00', genre: 'techno', label: 'ur', artist: 'Robert Hood' },
+  { title: 'Detroit Techno Classics Mix', meta: 'UR · Mills · Craig · 1991-1998', id: 'h6C6fIJzCbU', dur: '1:15:00', genre: 'techno', label: 'ur', artist: 'Various' },
+  { title: 'Tresor Records 90s Classics Mix', meta: 'Berlin / Detroit · 1992-1999', id: 'RqyYLCyOYkE', dur: '1:20:00', genre: 'techno', label: 'tresor', artist: 'Various' },
+  { title: 'Surgeon — Downwards Records Mix', meta: 'Downwards · Birmingham · 1996', id: 'a3pz0INTqx8', dur: '1:00:00', genre: 'techno', label: 'downwards', artist: 'Surgeon' },
   // ELECTRO
-  { title: 'Drexciya — Harnessed the Storm', meta: 'Submerge · Detroit · 2002 (grabado 90s)', id: 'J-xEJxh8qFc', dur: '52:00', genre: 'electro', label: 'submerge', artist: 'Drexciya' },
-  { title: 'Egyptian Lover — Egypt Egypt (Classic Mix)', meta: 'Egyptian Empire Records · LA · 1984', id: 'eFm7-l4InMo', dur: '5:00', genre: 'electro', label: 'egyptian_empire', artist: 'Egyptian Lover' },
-  { title: 'Aux 88 — Is It Man or Machine?', meta: 'Direct Beat · Detroit · 1996', id: 'EM_IJnJcjpE', dur: '50:00', genre: 'electro', label: 'direct_beat', artist: 'Aux 88' },
-  { title: 'Dopplereffekt — Gesamtkunstwerk', meta: 'International Deejay Gigolo · 1999', id: 'WMBuP5ACtHQ', dur: '42:00', genre: 'electro', label: 'gigolo', artist: 'Dopplereffekt' },
-  { title: 'Dynamix II — Give the DJ a Break', meta: 'Chill Records · Miami · 1986', id: 'Oi9OcLkRKQA', dur: '7:00', genre: 'electro', label: 'chill_records', artist: 'Dynamix II' },
-  { title: 'Classic Electro Mix — Afrika Bambaataa Era', meta: 'Tommy Boy / Planet Rock · 1982-1990', id: 'J1WM4EiRo-I', dur: '1:00:00', genre: 'electro', label: 'submerge', artist: 'Various' },
-  { title: 'Underground Resistance — Galaxy 2 Galaxy', meta: 'UR · Detroit · 1993 · Electro-Jazz', id: 'cPLMGPQVoqA', dur: '46:00', genre: 'electro', label: 'ur', artist: 'Underground Resistance' },
-  { title: 'Richard Davis — Electro Classics Detroit', meta: 'Direct Beat / Submerge · 1992-1999', id: 'mVIp4-KzVNc', dur: '1:00:00', genre: 'electro', label: 'direct_beat', artist: 'Various' },
+  { title: 'Egyptian Lover — Egypt Egypt', meta: 'Egyptian Empire · LA · 1984', id: 'eFm7-l4InMo', dur: '5:00', genre: 'electro', label: 'egyptian_empire', artist: 'Egyptian Lover' },
+  { title: 'Dopplereffekt — Gesamtkunstwerk', meta: 'Gigolo Records · 1999', id: 'WMBuP5ACtHQ', dur: '42:00', genre: 'electro', label: 'gigolo', artist: 'Dopplereffekt' },
+  { title: 'Classic Electro Mix — Afrika Bambaataa Era', meta: 'Tommy Boy · 1982-1990', id: 'J1WM4EiRo-I', dur: '1:00:00', genre: 'electro', label: 'submerge', artist: 'Various' },
+  { title: 'Claude Young — Concept One Mix', meta: 'Detroit Electro · 1993-1998', id: 'kP2_bHxpjtw', dur: '55:00', genre: 'electro', label: 'tresor', artist: 'Claude Young' },
   // AMBIENT / DUB TECHNO
-  { title: 'Basic Channel — BCD (Full Mix)', meta: 'Basic Channel · Berlin · 1994', id: 'CWLi5VD_lEE', dur: '1:00:00', genre: 'ambient', label: 'basic_channel', artist: 'Basic Channel' },
-  { title: 'Aphex Twin — Selected Ambient Works Vol II', meta: 'Warp Records · 1994', id: 'Xm9UlMX6R_s', dur: '2:38:00', genre: 'ambient', label: 'warp', artist: 'Aphex Twin' },
-  { title: 'The Orb — Adventures Beyond the Ultraworld', meta: 'Big Life / WAU · 1991', id: 'vUgXlYQl8gQ', dur: '1:55:00', genre: 'ambient', label: 'big_life', artist: 'The Orb' },
-  { title: 'Biosphere — Substrata (Full Album)', meta: 'All Saints Records · 1997 · Arctic Ambient', id: 'BJXZQ8NiGXw', dur: '1:00:00', genre: 'ambient', label: 'all_saints', artist: 'Biosphere' },
-  { title: 'Porter Ricks — Biokinetics (Full Album)', meta: 'Chain Reaction · Berlin · 1996', id: 'pOlhLXYBFe4', dur: '55:00', genre: 'ambient', label: 'chain_reaction', artist: 'Porter Ricks' },
-  { title: 'Vladislav Delay — Ele (Full Album)', meta: 'Chain Reaction · Finland · 1999', id: 'rR8RBM-QGwc', dur: '1:05:00', genre: 'ambient', label: 'chain_reaction', artist: 'Vladislav Delay' },
-  { title: 'Stars of the Lid — Music for Nitrous Oxide', meta: 'Kranky · 1995 · Drone Ambient', id: 'qfR5N4MSMAU', dur: '58:00', genre: 'ambient', label: 'kranky', artist: 'Stars of the Lid' },
-  { title: 'Gas — Zauberberg (Full Album)', meta: 'Mille Plateaux · 1997 · Ambient Techno', id: 'o_IFq2lFaFo', dur: '44:00', genre: 'ambient', label: 'mille_plateaux', artist: 'Gas' },
-  { title: 'Brian Eno & Harold Budd — The Plateaux of Mirror', meta: 'EG Records · 1980 · Proto-Ambient', id: 'bNoaQk2kbNE', dur: '39:00', genre: 'ambient', label: 'eg_records', artist: 'Brian Eno' },
-  { title: 'Labradford — Mi Media Naranja', meta: 'Kranky · 1997 · Post-Rock Ambient', id: 'bkYLLuQwjiA', dur: '41:00', genre: 'ambient', label: 'kranky', artist: 'Labradford' },
+  { title: 'Porter Ricks — Biokinetics', meta: 'Chain Reaction · Berlin · 1996', id: 'pOlhLXYBFe4', dur: '55:00', genre: 'ambient', label: 'chain_reaction', artist: 'Porter Ricks' },
+  { title: 'Vladislav Delay — Ele', meta: 'Chain Reaction · Finland · 1999', id: 'rR8RBM-QGwc', dur: '1:05:00', genre: 'ambient', label: 'chain_reaction', artist: 'Vladislav Delay' },
+  { title: 'Gas — Zauberberg', meta: 'Mille Plateaux · 1997', id: 'o_IFq2lFaFo', dur: '44:00', genre: 'ambient', label: 'mille_plateaux', artist: 'Gas' },
+  { title: 'Brian Eno & Harold Budd — The Plateaux of Mirror', meta: 'EG Records · 1980', id: 'bNoaQk2kbNE', dur: '39:00', genre: 'ambient', label: 'eg_records', artist: 'Brian Eno' },
+  { title: 'Labradford — Mi Media Naranja', meta: 'Kranky · 1997', id: 'bkYLLuQwjiA', dur: '41:00', genre: 'ambient', label: 'kranky', artist: 'Labradford' },
+  { title: 'The Orb — Adventures Beyond the Ultraworld', meta: 'Big Life · 1991', id: 'vUgXlYQl8gQ', dur: '1:55:00', genre: 'ambient', label: 'big_life', artist: 'The Orb' },
 ];
 
 const LABEL_NAMES = {
@@ -549,70 +288,70 @@ const MC_BY_TRACK = {
   'vMBOBE0aB_E': "El Richard D. James Album de 1996 dura 32 minutos y tiene 9 tracks. Cada uno es una bomba pequeña. Come to Daddy salió un año después, pero este disco es donde Aphex Twin decidió que el pop podía ser violento y hermoso al mismo tiempo. La portada — su cara pixelada — es una de las imágenes más reconocibles del IDM. Escucha con auriculares, en silencio, de noche.",
   'M9xoTygJMMs': "Este mix recorre los 90s de Aphex Twin de punta a punta — desde el ambient puro de los primeros años hasta el drill and bass del final de la década. Richard D. James no es un artista, es un fenómeno. Produjo bajo al menos diez alias distintos. Polygon Window, AFX, The Dice Man. Cada nombre era un género diferente. Esto es la versión completa.",
   'TGBhmtGqVuc': "Luke Vibert grabó Drum n Bass for Papa bajo el alias Plug en 1996 para Rephlex. Es posiblemente el disco de drum and bass más extraño que existe. Demasiado raro para la escena jungle, demasiado jungle para la escena IDM. En su época no lo entendió casi nadie. Hoy es una joya de culto que coleccionistas buscan en Discogs por cifras absurdas. Tienes suerte de escucharlo ahora.",
-  'Kkx87-1YXGE': "Throbbing Pouch es Wagon Christ — uno de los diez alias de Luke Vibert. Salió en Rising High en 1995. Wagon Christ es el Vibert más cálido, más ambient, más cerca del hip hop abstracto que del rave. Un lado B completo de la escena Rephlex que la gente pasa por alto porque busca los beats más agresivos. Este disco merece más atención de la que recibe.",
+  'TGBhmtGqVuc': "Throbbing Pouch es Wagon Christ — uno de los diez alias de Luke Vibert. Salió en Rising High en 1995. Wagon Christ es el Vibert más cálido, más ambient, más cerca del hip hop abstracto que del rave. Un lado B completo de la escena Rephlex que la gente pasa por alto porque busca los beats más agresivos. Este disco merece más atención de la que recibe.",
   'fWHRdBPJsfc': "Lunatic Harness es µ-Ziq — Mike Paradinas — en su momento más inspirado. 1997, Planet Mu, el sello que él mismo fundó. Las melodías parecen de videojuego roto, los beats no caben en ningún tempo fijo, y aun así todo fluye. Paradinas estudió composición clásica antes de entrar a la electrónica. Se nota en la estructura, aunque la superficie parezca caos puro.",
   'gFuGdPbYCao': "Bogdan Raczynski era un productor polaco viviendo en Japón cuando Aphex Twin lo fichó para Rephlex casi de casualidad. Samurai Math Beats de 1999 es breakcore avant la lettre — velocidad, caos, estructura matemática escondida debajo del ruido. Muy pocos lo escucharon en su momento. Es de esos discos que en 20 años aparecen en todas las listas como referencia olvidada.",
   // ACID HOUSE
   'za-CN_MQeJY': "Acid Tracks. Phuture. 1987. Trax Records. Este es el big bang. DJ Pierre programó la Roland TB-303 mal — no sabía usarla — y el resultado fue ese squelch, ese burbujeo ácido que nunca antes había existido. Ron Hardy lo tocó en el Music Box y la gente enloqueció. Diez minutos que cambiaron la historia de la música electrónica. Estás escuchando el origen.",
   '7IHZmakyAcU': "Chicago, 1987 a 1991. Trax Records y DJ International eran los dos sellos que definieron el sonido. La 303, la 909, la 808 — máquinas baratas mal usadas que se convirtieron en los instrumentos más influyentes del siglo. Este mix te lleva por los primeros años del acid, cuando nadie sabía todavía que estaban inventando algo que iba a durar décadas.",
-  'GNLqDFJ4H5k': "De Chicago al Reino Unido. El acid house cruzó el Atlántico en 1987 y llegó a un país que necesitaba exactamente eso. El verano del 88 — el Second Summer of Love — miles de personas en campos y almacenes. La policía sin saber qué hacer. El gobierno tardó años en reaccionar. Este mix cubre ese periodo exacto, cuando todo era nuevo y nadie pedía permiso.",
+  '7IHZmakyAcU': "De Chicago al Reino Unido. El acid house cruzó el Atlántico en 1987 y llegó a un país que necesitaba exactamente eso. El verano del 88 — el Second Summer of Love — miles de personas en campos y almacenes. La policía sin saber qué hacer. El gobierno tardó años en reaccionar. Este mix cubre ese periodo exacto, cuando todo era nuevo y nadie pedía permiso.",
   'qrHWqFPBzlA': "Larry Heard — Mr. Fingers — grabó Can You Feel It en 1986 en una tarde. Una drum machine, un sintetizador, una tarde libre. Salió en Trax Records y se convirtió en uno de los tracks más importantes de la historia del house. No es acid — es deep house puro, el lado emocional de Chicago. Heard nunca buscó fama. Solo hacía música porque necesitaba hacerla.",
-  'EkFNz68XSNE': "Warp Records nació en Sheffield en 1989 de la escena acid house del norte de Inglaterra. Los primeros años — Forgemasters, Nightmares on Wax, LFO — son los más crudos y los mejores. Antes de que Warp se convirtiera en el sello de Aphex Twin y Autechre, era un sello de club, de pista, de 4am en una fábrica reconvertida. Este es ese Warp.",
+  'Rc_7B0Oevlo': "Warp Records nació en Sheffield en 1989 de la escena acid house del norte de Inglaterra. Los primeros años — Forgemasters, Nightmares on Wax, LFO — son los más crudos y los mejores. Antes de que Warp se convirtiera en el sello de Aphex Twin y Autechre, era un sello de club, de pista, de 4am en una fábrica reconvertida. Este es ese Warp.",
   'Rc_7B0Oevlo": "DJ Pierre — uno de los tres miembros de Phuture — tuvo una carrera solista extensa después de inventar el acid. El Wild Pitch Mix es uno de sus sets más buscados. Pierre conocía el acid desde dentro porque lo había creado. Cuando mezclaba sus propios tracks con los de otros, la coherencia era total. Esto es el creador del género en control total.",
-  'fJIgKjFnTls': "Chicago, 1986 a 1991. Cinco años que lo cambiaron todo. Este mix recorre el catálogo de Trax y DJ International — los dos sellos que documentaron el nacimiento del acid house y el deep house. Sin estos sellos, sin esta ciudad, sin estos productores que trabajaban con máquinas baratas en cuartos pequeños, la música electrónica sería completamente diferente.",
+  'qrHWqFPBzlA': "Chicago, 1986 a 1991. Cinco años que lo cambiaron todo. Este mix recorre el catálogo de Trax y DJ International — los dos sellos que documentaron el nacimiento del acid house y el deep house. Sin estos sellos, sin esta ciudad, sin estos productores que trabajaban con máquinas baratas en cuartos pequeños, la música electrónica sería completamente diferente.",
   // JUNGLE / D&B
-  'byoSRf-8MPo': "1993 a 1995. El jungle en su momento más puro — antes de que se llamara drum and bass, antes de que se suavizara. Reinforced Records y Moving Shadow eran los dos sellos que definían el sonido. Breaks acelerados, samples de reggae y dub, bajos que hacían temblar los altavoces. Esto es el jungle original, el que nació en las fiestas rave del sur de Londres.",
+  'LlFB3P1SFnk': "1993 a 1995. El jungle en su momento más puro — antes de que se llamara drum and bass, antes de que se suavizara. Reinforced Records y Moving Shadow eran los dos sellos que definían el sonido. Breaks acelerados, samples de reggae y dub, bajos que hacían temblar los altavoces. Esto es el jungle original, el que nació en las fiestas rave del sur de Londres.",
   'Jm7ZJCM7VM0': "Timeless. Goldie. Metalheadz. 1995. El primer álbum de drum and bass que entró al top 10 del Reino Unido. Goldie empezó como graffitero en Birmingham — sus murales están por toda la ciudad. Cuando entró a la música trajo esa misma escala, esa misma ambición. Inner City Life dura casi quince minutos en su versión completa. Un álbum que redefinió lo que podía ser la música electrónica de club.",
   'LlFB3P1SFnk': "Reinforced Records. Dollis Hill, Londres, 1990. Marc Mac y Dego — los mismos que formarían 4hero — lo fundaron en un departamento. Las portadas las hacían a mano, los discos los distribuían ellos mismos. El catálogo de Reinforced es el más importante del jungle — Goldie grabó aquí antes de Metalheadz, 4hero definió el sonido del intelligent jungle, y doc scott trajo la oscuridad.",
-  'GVbewUhKAsc': "1993. El hardcore rave británico en su momento de transición. Suburban Base y Reinforced estaban empujando los breaks más rápido, los bajos más profundos. La gente en las fiestas no sabía si llamarlo hardcore, jungle o rave. No importaba el nombre — importaba lo que hacía en el cuerpo. Este mix captura ese momento exacto antes de que todo se definiera.",
+  'byoSRf-8MPo': "1993. El hardcore rave británico en su momento de transición. Suburban Base y Reinforced estaban empujando los breaks más rápido, los bajos más profundos. La gente en las fiestas no sabía si llamarlo hardcore, jungle o rave. No importaba el nombre — importaba lo que hacía en el cuerpo. Este mix captura ese momento exacto antes de que todo se definiera.",
   'dFb5fXxSJlc': "Moving Shadow Records. Rob Playford lo fundó en 1990. El sello más melódico del jungle — Omni Trio era su artista estrella, texturas cálidas, breaks perfectamente cortados. Mientras Reinforced era oscuridad y urgencia, Moving Shadow era el amanecer después de la fiesta. Dos sellos, dos caras del mismo género, los dos necesarios para entender qué fue el jungle.",
   '09tSg0zL2cA': "Grooverider y Fabio tenían residencia en el club Rage en Heaven, Londres, desde 1988. Ahí es donde el hardcore se convirtió en jungle. Grooverider tocaba los tracks pitch shiftados, más rápido, con los breaks cortados de formas nuevas. Este mix cubre sus años en Metalheadz — el lado más oscuro y técnico del drum and bass, el que buscaba la profundidad más que la melodía.",
   'j3EKXGnzaS4': "Shut Up and Dance Records. Hackney, Londres, 1989. PJ y Smiley lo fundaron con £500. Fueron de los primeros en samplear hip hop americano y mezclarlo con el hardcore rave británico. En 1992 fueron demandados por samplear a Prince sin permiso — y ganaron el caso. Pioneros en lo musical y en lo legal. El jungle les debe más de lo que reconoce.",
   'dCNzBVmBBUQ': "LTJ Bukem es el lado más atmosférico del drum and bass — jazz, ambient, profundidad. Good Looking Records, su propio sello, fue la respuesta al drum and bass que se estaba poniendo demasiado agresivo a mediados de los 90. Logical Progression de 1996 es el disco que definió el intelligent drum and bass. Una hora de música que prueba que los beats rápidos y la contemplación no se excluyen.",
   // BREAKBEAT
-  '7GWAbKLZzZ0': "UK Hardcore Rave. 1991 a 1993. El momento más caótico y creativo de la música de baile británica. Samples de hip hop americano, reggae, soul, jazz — todo pasado por drum machines a 140 BPM. Lo llamaban ardkore. Suburban Base en Essex y Moving Shadow en Londres eran los sellos centrales. Esto es antes de que todo se ordenara en géneros con nombres y reglas.",
+  'iNMiTGNOsZo': "UK Hardcore Rave. 1991 a 1993. El momento más caótico y creativo de la música de baile británica. Samples de hip hop americano, reggae, soul, jazz — todo pasado por drum machines a 140 BPM. Lo llamaban ardkore. Suburban Base en Essex y Moving Shadow en Londres eran los sellos centrales. Esto es antes de que todo se ordenara en géneros con nombres y reglas.",
   'iNMiTGNOsZo': "1992. El breakbeat hardcore en su apogeo. Este mix captura el año exacto en que el rave británico estaba en su punto más alto y más salvaje antes de que la Criminal Justice Act lo criminalizara. Almacenes, campos, coordenadas pasadas de mano en mano. Decenas de miles de personas. Música hecha para eso — no para escuchar, para bailar hasta el amanecer.",
   'b0Wm1LrXFuI': "Music for the Jilted Generation. The Prodigy. XL Recordings. 1994. El título lo dice todo — la generación traicionada por la Criminal Justice Act que ilegalizó los raves. Liam Howlett respondió con el disco más oscuro y agresivo de su carrera hasta entonces. Their Law abre el álbum con una declaración de guerra. El breakbeat como protesta política. Esto es eso.",
-  'pFkI-e2vb2Q': "1990 a 1994. El arco completo del breakbeat clásico en UK. De los primeros raves hasta el momento en que el hardcore se dividió en jungle y big beat. El Amen break atraviesa todo — ese break de batería de 1969 que se convirtió en la columna vertebral de una década entera de música electrónica británica. Seis segundos que no paran de reproducirse.",
+  'V48YBmSSuss': "1990 a 1994. El arco completo del breakbeat clásico en UK. De los primeros raves hasta el momento en que el hardcore se dividió en jungle y big beat. El Amen break atraviesa todo — ese break de batería de 1969 que se convirtió en la columna vertebral de una década entera de música electrónica británica. Seis segundos que no paran de reproducirse.",
   'V48YBmSSuss': "El Amen break. Gregory Coleman, baterista de The Winstons, lo tocó en 1969 en una canción llamada Amen Brother. Nunca cobró un centavo. Ese break de seis segundos se convirtió en el sample más usado de la historia — jungle, drum and bass, hardcore, breakcore. Este mix documenta su evolución a través de los 90. La historia de un break que se independizó del músico que lo creó.",
-  'fJIgKjFnTls': "Suburban Base Records. Romford, Essex. El sello que más fielmente documentó el ardkore británico entre 1991 y 1995. DJ Hype, Remarc, Nookie — todos pasaron por aquí. Las portadas fluorescentes, los títulos absurdos, los tracks al límite del tempo. Música hecha para las 4am en un almacén sin ventanas y sin permiso. No necesitaba nada más para existir.",
+  'qrHWqFPBzlA': "Suburban Base Records. Romford, Essex. El sello que más fielmente documentó el ardkore británico entre 1991 y 1995. DJ Hype, Remarc, Nookie — todos pasaron por aquí. Las portadas fluorescentes, los títulos absurdos, los tracks al límite del tempo. Música hecha para las 4am en un almacén sin ventanas y sin permiso. No necesitaba nada más para existir.",
   'W_GU5Cj-WMU': "Exit Planet Dust. The Chemical Brothers — entonces conocidos como The Dust Brothers. Junior Boy's Own. 1995. El big beat en su momento más puro — breaks contundentes, referencias al rock y al hip hop, una energía de estadio que el breakbeat nunca había tenido. Block Rockin Beats vino después, pero este disco es donde se definió el sonido que iba a llenar los festivales.",
   // FOOTWORK
-  'N-1yM7RB2To': "Chicago, South Side, años 90. El juke y el footwork nacieron aquí, en las fiestas de barrio, en las competencias de baile donde los moves son tan rápidos que los pies parecen no tocar el suelo. 160 BPM. Samples cortados al milímetro. Música hecha para una comunidad específica, sin pensar en el mercado, sin buscar aprobación externa. Así de pura suena.",
-  'nxLQAfmpOZs': "RP Boo — Kavain Space — lleva produciendo footwork desde los años 90 en Chicago. Su primer lanzamiento oficial, Legacy, no salió hasta 2013 en Planet Mu. Décadas de producción underground antes de que alguien de afuera prestara atención. Eso explica por qué suena diferente a todo — no fue hecho para ti. Fue hecho para la comunidad que lo bailaba cada semana.",
-  'kwBBEijKVDY': "El ghetto house de Chicago — DJ Deeon, DJ Funk, Traxman — es la raíz directa del footwork. Más crudo que el house mainstream, más funcional que el arte, hecho en computadoras baratas con lo que hubiera disponible. La escena house de Chicago lo ignoró por años. La comunidad lo sostuvo sola. Eso le dio una autenticidad que el mainstream nunca pudo comprar.",
-  'Ol-4ygIEYh4': "El juke de Chicago a 160 BPM. La velocidad no es un accidente — es una necesidad funcional. Las competencias de baile footwork requieren ese tempo para que los moves funcionen. La música creció alrededor del baile, no al revés. Cuando escuchas esto sin ver el baile te falta la mitad. Con el baile encima es otra cosa completamente.",
-  'V9m-tPNzEj4': "Underground Chicago, pre-2000. Antes de que Planet Mu pusiera al footwork en el mapa internacional, antes de que los festivales europeos lo programaran, esto existía en fiestas pequeñas en el South Side. Sin documentación, sin prensa, sin Discogs. Solo música para bailar, pasada de mano en mano en casetes y CDRs. Este mix rescata ese periodo que casi no dejó rastro.",
-  'fGgjBBLxmX4': "DJ Rashad y Teklife globalizaron el footwork en los 2000s, pero las raíces vienen de aquí — el ghetto house de Chicago de los 90, RP Boo construyendo el lenguaje rítmico en silencio, fiestas donde nadie grababa nada porque nadie pensaba que valía la pena grabarlo. Valía la pena. Este es el sonido antes de que el mundo supiera que existía.",
+  'AqNJZdTqLaU': "Chicago, South Side, años 90. El juke y el footwork nacieron aquí, en las fiestas de barrio, en las competencias de baile donde los moves son tan rápidos que los pies parecen no tocar el suelo. 160 BPM. Samples cortados al milímetro. Música hecha para una comunidad específica, sin pensar en el mercado, sin buscar aprobación externa. Así de pura suena.",
+  'vaA0gmfoOtc': "RP Boo — Kavain Space — lleva produciendo footwork desde los años 90 en Chicago. Su primer lanzamiento oficial, Legacy, no salió hasta 2013 en Planet Mu. Décadas de producción underground antes de que alguien de afuera prestara atención. Eso explica por qué suena diferente a todo — no fue hecho para ti. Fue hecho para la comunidad que lo bailaba cada semana.",
+  'J1WM4EiRo-I': "El ghetto house de Chicago — DJ Deeon, DJ Funk, Traxman — es la raíz directa del footwork. Más crudo que el house mainstream, más funcional que el arte, hecho en computadoras baratas con lo que hubiera disponible. La escena house de Chicago lo ignoró por años. La comunidad lo sostuvo sola. Eso le dio una autenticidad que el mainstream nunca pudo comprar.",
+  'J1WM4EiRo-I': "El juke de Chicago a 160 BPM. La velocidad no es un accidente — es una necesidad funcional. Las competencias de baile footwork requieren ese tempo para que los moves funcionen. La música creció alrededor del baile, no al revés. Cuando escuchas esto sin ver el baile te falta la mitad. Con el baile encima es otra cosa completamente.",
+  'vaA0gmfoOtc': "Underground Chicago, pre-2000. Antes de que Planet Mu pusiera al footwork en el mapa internacional, antes de que los festivales europeos lo programaran, esto existía en fiestas pequeñas en el South Side. Sin documentación, sin prensa, sin Discogs. Solo música para bailar, pasada de mano en mano en casetes y CDRs. Este mix rescata ese periodo que casi no dejó rastro.",
+  'vaA0gmfoOtc': "DJ Rashad y Teklife globalizaron el footwork en los 2000s, pero las raíces vienen de aquí — el ghetto house de Chicago de los 90, RP Boo construyendo el lenguaje rítmico en silencio, fiestas donde nadie grababa nada porque nadie pensaba que valía la pena grabarlo. Valía la pena. Este es el sonido antes de que el mundo supiera que existía.",
   // TECHNO
-  'MBFxu5_9XT0': "Underground Resistance. Detroit. Mike Banks y Jeff Mills lo fundaron en 1989 como respuesta a la crisis industrial de la ciudad. Interstellar Fugitives de 1998 es uno de sus álbumes más políticos — el arte como resistencia, el techno como arma. No daban entrevistas, no mostraban sus caras. La música hablaba sola. Esto es UR en su momento más combativo.",
-  'Yer8-4RKQDI': "Jeff Mills en el Rex Club de París, 1994. Mills es el DJ más rápido y preciso que ha existido — toca con tres platos simultáneamente, mezcla con una precisión quirúrgica. Purpose Maker, su sello, documentó el techno de Detroit más minimal y más rápido. Este set es una clase magistral de cómo se mezcla techno. Nada de efectos. Solo puntería.",
-  'a3pz0INTqx8': "Surgeon — Anthony Child — viene de Birmingham, no de Detroit. Downwards Records, su sello, capturó el lado más industrial y oscuro del techno inglés en los 90. Más crudo que el techno de Detroit, más brutal que el de Berlin. Birmingham tiene esa tradición — Black Sabbath, la industria del metal, la grisura del Midlands. Surgeon lo convirtió en música.",
-  '5A5HR3e8Hgc': "Carl Craig es el lado más sofisticado del techno de Detroit — jazz, soul, ambient, todo filtrado por beats de 130 BPM. Innerzone Orchestra fue su proyecto más ambicioso: músicos de jazz reales tocando sobre sus producciones electrónicas. Planet E Communications, su sello desde 1991, es una de las discografías más coherentes del techno. Esto es la inteligencia emocional del techno.",
+  'cPLMGPQVoqA': "Underground Resistance. Detroit. Mike Banks y Jeff Mills lo fundaron en 1989 como respuesta a la crisis industrial de la ciudad. Interstellar Fugitives de 1998 es uno de sus álbumes más políticos — el arte como resistencia, el techno como arma. No daban entrevistas, no mostraban sus caras. La música hablaba sola. Esto es UR en su momento más combativo.",
+  '1JBmTcAhDHs': "Jeff Mills en el Rex Club de París, 1994. Mills es el DJ más rápido y preciso que ha existido — toca con tres platos simultáneamente, mezcla con una precisión quirúrgica. Purpose Maker, su sello, documentó el techno de Detroit más minimal y más rápido. Este set es una clase magistral de cómo se mezcla techno. Nada de efectos. Solo puntería.",
+  'XJzDMJNlBCg': "Surgeon — Anthony Child — viene de Birmingham, no de Detroit. Downwards Records, su sello, capturó el lado más industrial y oscuro del techno inglés en los 90. Más crudo que el techno de Detroit, más brutal que el de Berlin. Birmingham tiene esa tradición — Black Sabbath, la industria del metal, la grisura del Midlands. Surgeon lo convirtió en música.",
+  'h6C6fIJzCbU': "Carl Craig es el lado más sofisticado del techno de Detroit — jazz, soul, ambient, todo filtrado por beats de 130 BPM. Innerzone Orchestra fue su proyecto más ambicioso: músicos de jazz reales tocando sobre sus producciones electrónicas. Planet E Communications, su sello desde 1991, es una de las discografías más coherentes del techno. Esto es la inteligencia emocional del techno.",
   'h6C6fIJzCbU': "Detroit. Motor City. La ciudad que construyó los coches de América y luego los vio marcharse. El techno nació en esa crisis — Derrick May, Kevin Saunderson, Juan Atkins mirando a Kraftwerk y a la música negra americana y creando algo nuevo. Este mix recorre el catálogo clásico: UR, Mills, Craig. La trilogía fundacional.",
-  'hCFaHGjbMDU': "Drexciya. Gerald Donald y James Stinson. Una mitología completa — los hijos de los esclavos arrojados al Atlántico que aprendieron a respirar bajo el agua y construyeron una civilización submarina. El concepto era tan elaborado como la música. Tresor Records los publicó en Alemania cuando Detroit los ignoraba. Aquí están las grabaciones de ese mundo imaginado.",
+  'eFm7-l4InMo': "Drexciya. Gerald Donald y James Stinson. Una mitología completa — los hijos de los esclavos arrojados al Atlántico que aprendieron a respirar bajo el agua y construyeron una civilización submarina. El concepto era tan elaborado como la música. Tresor Records los publicó en Alemania cuando Detroit los ignoraba. Aquí están las grabaciones de ese mundo imaginado.",
   'XJzDMJNlBCg': "Robert Hood — Minimal Nation — 1994. Hood era miembro de Underground Resistance antes de irse a construir el techno más reducido y más funcional que existía. M-Plant, su sello. Una caja de ritmos, un sintetizador, nada más. Minimal Nation es literalmente eso: una nación construida con los elementos mínimos. Influyó a toda la siguiente generación de productores de Berlín.",
-  'RqyYLCyOYkE': "Tresor Records nació en 1991 en el sótano de un banco destruido en Berlín Oriental — el Tresor Club. El muro había caído dos años antes. La ciudad estaba en shock y éxtasis simultáneamente. Packard Plant de Detroit y los almacenes de Berlin Este compartían la misma energía de ruina industrial. Este mix documenta esa alianza entre dos ciudades que el capitalismo había abandonado.",
+  'kP2_bHxpjtw': "Tresor Records nació en 1991 en el sótano de un banco destruido en Berlín Oriental — el Tresor Club. El muro había caído dos años antes. La ciudad estaba en shock y éxtasis simultáneamente. Packard Plant de Detroit y los almacenes de Berlin Este compartían la misma energía de ruina industrial. Este mix documenta esa alianza entre dos ciudades que el capitalismo había abandonado.",
   'kP2_bHxpjtw': "Claude Young vino de Detroit con una técnica de mezcla tan precisa como la de Jeff Mills pero con un sonido más oscuro. Concept One, su sello, capturó el techno de transición — entre el primer Detroit y el segundo Berlin. Este mix recorre su catálogo de los 90, cuando el techno todavía sonaba a ciudad industrial y no a festival al aire libre.",
   'n2Mq1E5PoXA': "Energy Flash. Joey Beltram. R&S Records, Bélgica, 1990. El hardcore techno en su momento de nacimiento — antes de que se dividiera en trance, hardcore gabber y techno. Beltram tenía 20 años cuando lo grabó. El sintetizador principal, ese riff descendente, se convirtió en uno de los más reconocibles de la historia de la música electrónica. Un track que generó un género.",
   // ELECTRO
-  'J-xEJxh8qFc': "Drexciya — Harnessed the Storm — Submerge, 2002, pero grabado en los 90. James Stinson murió ese mismo año sin saber que el disco había salido. Stinson y Gerald Donald construyeron una mitología completa — los hijos de esclavos que aprendieron a vivir bajo el agua. El electro como ciencia ficción afrofuturista. Cada disco era un capítulo de esa historia.",
+  'eFm7-l4InMo': "Drexciya — Harnessed the Storm — Submerge, 2002, pero grabado en los 90. James Stinson murió ese mismo año sin saber que el disco había salido. Stinson y Gerald Donald construyeron una mitología completa — los hijos de esclavos que aprendieron a vivir bajo el agua. El electro como ciencia ficción afrofuturista. Cada disco era un capítulo de esa historia.",
   'eFm7-l4InMo': "Egyptian Lover. Los Angeles, 1984. Egypt Egypt es uno de los tracks de electro más importantes de la historia — la drum machine, el vocoder, la influencia directa de Afrika Bambaataa. Egyptian Lover vendió los discos desde el maletero de su coche antes de que nadie se los distribuyera. Eso es independencia. Eso es la escena electro en su forma más pura.",
-  'EM_IJnJcjpE': "Aux 88 — Thomas Barnett y Keith Tucker — Detroit, Direct Beat Records. Los guardianes del electro clásico cuando todo el mundo estaba haciendo techno. Is It Man or Machine es su mejor álbum — 1996, cuando el electro estaba casi olvidado. Barnett y Tucker no cambiaron de sonido para seguir la moda. Siguieron haciendo electro porque era lo que les importaba.",
+  'WMBuP5ACtHQ': "Aux 88 — Thomas Barnett y Keith Tucker — Detroit, Direct Beat Records. Los guardianes del electro clásico cuando todo el mundo estaba haciendo techno. Is It Man or Machine es su mejor álbum — 1996, cuando el electro estaba casi olvidado. Barnett y Tucker no cambiaron de sonido para seguir la moda. Siguieron haciendo electro porque era lo que les importaba.",
   'WMBuP5ACtHQ': "Dopplereffekt. Gerald Donald, el mismo de Drexciya, bajo otro alias. Gesamtkunstwerk — obra de arte total en alemán — Gigolo Records, 1999. El electro más frío y más conceptual. Donald nunca hacía entrevistas, nunca explicaba sus proyectos. La música y el concepto hablaban solos. Dopplereffekt sonaba como si una inteligencia artificial hubiera descubierto el funk.",
-  'Oi9OcLkRKQA': "Dynamix II. Miami, 1986. Give the DJ a Break es electro miami bass — más rápido, más sexual, más crudo que el electro de Nueva York. Miami tenía su propia escena, completamente separada de lo que pasaba en el norte. Chill Records lo documentó todo. Este track tuvo más influencia en el hip hop del sur americano que cualquier cosa de Detroit.",
+  'J1WM4EiRo-I': "Dynamix II. Miami, 1986. Give the DJ a Break es electro miami bass — más rápido, más sexual, más crudo que el electro de Nueva York. Miami tenía su propia escena, completamente separada de lo que pasaba en el norte. Chill Records lo documentó todo. Este track tuvo más influencia en el hip hop del sur americano que cualquier cosa de Detroit.",
   'J1WM4EiRo-I': "Afrika Bambaataa y Planet Rock, 1982. El Kraftwerk de Düsseldorf y la cultura hip hop del Bronx colisionando. Ese choque creó el electro. Tommy Boy Records lo publicó. La TR-808, el vocoder, los sintetizadores alemanes — todo mezclado con la energía del South Bronx. Este mix recorre la era fundacional del electro antes de que Detroit lo reinventara.",
   'cPLMGPQVoqA': "Underground Resistance — Galaxy 2 Galaxy — 1993. El lado más jazzístico de UR. Mike Banks mezclando el jazz de Detroit, la música negra americana, con el electro y el techno. Un disco que suena a ciencia ficción y a historia al mismo tiempo. UR nunca se quedó en un solo sonido — era una organización de resistencia cultural, no un grupo musical.",
-  'mVIp4-KzVNc': "Detroit, Direct Beat y Submerge — los dos sellos que documentaron el electro de la ciudad en los 90. Richard Davis, Dwayne Lasley, Keith Tucker. Nombres que la historia del techno olvidó injustamente porque el electro estaba fuera de moda. Ahora esos discos valen fortunas en Discogs. Este mix los rescata del olvido.",
+  'cPLMGPQVoqA': "Detroit, Direct Beat y Submerge — los dos sellos que documentaron el electro de la ciudad en los 90. Richard Davis, Dwayne Lasley, Keith Tucker. Nombres que la historia del techno olvidó injustamente porque el electro estaba fuera de moda. Ahora esos discos valen fortunas en Discogs. Este mix los rescata del olvido.",
   // AMBIENT / DUB TECHNO
-  'CWLi5VD_lEE': "Basic Channel. Moritz von Oswald y Mark Ernestus. Berlin, 1993. Inventaron el dub techno — techno procesado con los efectos del dub jamaicano, reverb profundo, delay infinito, graves que no terminan. Basic Channel Records publicó sus discos en formato de 12 pulgadas sin información — sin títulos en la portada, sin nombres de artista. La música sola. Radical.",
-  'Xm9UlMX6R_s': "Selected Ambient Works Volume II. Aphex Twin. Warp, 1994. El disco más inquietante de Richard D. James — sin beats, solo texturas y atmósferas que parecen venir de lugares que no existen. 24 tracks sin nombres, solo fotografías de ambientes extraños como títulos. Grabado principalmente mientras dormía, según él mismo. Dos horas y media de música que te desorienta completamente.",
-  'vUgXlYQl8gQ': "The Orb. Alex Paterson y Jimmy Cauty — el mismo de KLF. Adventures Beyond the Ultraworld, 1991. El ambient más accesible y más extraño al mismo tiempo — samples de todo, narración, ambient house que podías bailar o escuchar en casa. Little Fluffy Clouds fue un single que llegó a las listas. Big Life Records los publicó cuando nadie sabía qué hacer con su música.",
-  'BJXZQ8NiGXw': "Biosphere — Geir Jenssen — noruego, grabado en el Ártico. Substrata, 1997, All Saints Records. El ambient más frío y más espacioso que existe — inspirado en los paisajes del norte de Noruega, en el silencio del Ártico, en las temperaturas que hacen que el sonido viaje diferente. Escuchar esto con auriculares en la oscuridad es uno de los mejores viajes que ofrece la música electrónica.",
+  'pOlhLXYBFe4': "Basic Channel. Moritz von Oswald y Mark Ernestus. Berlin, 1993. Inventaron el dub techno — techno procesado con los efectos del dub jamaicano, reverb profundo, delay infinito, graves que no terminan. Basic Channel Records publicó sus discos en formato de 12 pulgadas sin información — sin títulos en la portada, sin nombres de artista. La música sola. Radical.",
+  '7fSPGbEP0ho': "Selected Ambient Works Volume II. Aphex Twin. Warp, 1994. El disco más inquietante de Richard D. James — sin beats, solo texturas y atmósferas que parecen venir de lugares que no existen. 24 tracks sin nombres, solo fotografías de ambientes extraños como títulos. Grabado principalmente mientras dormía, según él mismo. Dos horas y media de música que te desorienta completamente.",
+  '7fSPGbEP0ho': "The Orb. Alex Paterson y Jimmy Cauty — el mismo de KLF. Adventures Beyond the Ultraworld, 1991. El ambient más accesible y más extraño al mismo tiempo — samples de todo, narración, ambient house que podías bailar o escuchar en casa. Little Fluffy Clouds fue un single que llegó a las listas. Big Life Records los publicó cuando nadie sabía qué hacer con su música.",
+  'rR8RBM-QGwc': "Biosphere — Geir Jenssen — noruego, grabado en el Ártico. Substrata, 1997, All Saints Records. El ambient más frío y más espacioso que existe — inspirado en los paisajes del norte de Noruega, en el silencio del Ártico, en las temperaturas que hacen que el sonido viaje diferente. Escuchar esto con auriculares en la oscuridad es uno de los mejores viajes que ofrece la música electrónica.",
   'pOlhLXYBFe4': "Porter Ricks — Andy Mellwig y Thomas Köner. Chain Reaction, Berlin, 1996. Biokinetics es dub techno en su forma más orgánica — los beats suenan como latidos, los bajos como respiraciones lentas. Chain Reaction era el subsello de Basic Channel, aún más experimental. Köner venía del arte sonoro, Mellwig del techno. El resultado es inclasificable y perfecto.",
   'rR8RBM-QGwc': "Vladislav Delay — Sasu Ripatti — finlandés. Chain Reaction, 1999. Ele fue su primer álbum y sigue siendo su mejor trabajo — techno tan procesado que los beats casi desaparecen bajo capas de reverb y distorsión analógica. Ripatti grabó el álbum en invierno finlandés, completamente aislado. Se escucha. La soledad está en cada segundo de este disco.",
-  'qfR5N4MSMAU': "Stars of the Lid. Austin, Texas. Music for Nitrous Oxide, 1995, Kranky. Drone ambient antes de que existiera la palabra — guitarras procesadas hasta que dejan de sonar a guitarras, cuerdas sintéticas, capas que tardan minutos en moverse. Kranky Records era el sello de Chicago que documentaba todo lo que era demasiado lento y demasiado silencioso para cualquier otra compañía.",
-  'o_IFq2lFaFo': "Gas — Wolfgang Voigt. Mille Plateaux, 1997. Zauberberg — montaña mágica en alemán, referencia a Thomas Mann. Voigt samplea música clásica y la pasa por capas de procesamiento hasta que solo queda el pulso y la textura. Los beats son apenas perceptibles. La música parece venir de un bosque alemán en invierno. Una de las obras más originales de la música electrónica de los 90.",
+  'bNoaQk2kbNE': "Stars of the Lid. Austin, Texas. Music for Nitrous Oxide, 1995, Kranky. Drone ambient antes de que existiera la palabra — guitarras procesadas hasta que dejan de sonar a guitarras, cuerdas sintéticas, capas que tardan minutos en moverse. Kranky Records era el sello de Chicago que documentaba todo lo que era demasiado lento y demasiado silencioso para cualquier otra compañía.",
+  'bkYLLuQwjiA': "Gas — Wolfgang Voigt. Mille Plateaux, 1997. Zauberberg — montaña mágica en alemán, referencia a Thomas Mann. Voigt samplea música clásica y la pasa por capas de procesamiento hasta que solo queda el pulso y la textura. Los beats son apenas perceptibles. La música parece venir de un bosque alemán en invierno. Una de las obras más originales de la música electrónica de los 90.",
   'bNoaQk2kbNE': "Brian Eno y Harold Budd. The Plateaux of Mirror. EG Records, 1980. El proto-ambient — Eno ya había definido el género con Ambient 1 dos años antes, pero este disco con el pianista Harold Budd es el más íntimo y el más humano. Las notas de piano flotan sobre las texturas de Eno. Cada vez que escuchas este disco parece diferente. Eso es lo que hace el ambient cuando funciona.",
   'bkYLLuQwjiA': "Labradford. Richmond, Virginia. Mi Media Naranja, Kranky, 1997. Post-rock ambient antes de que existiera esa categoría — guitarras que apenas suenan, órganos que se disuelven, voces que son texturas. Kranky Records era el único sello que publicaba esta música en los 90. Labradford influyó a Stars of the Lid, a Grouper, a todo el ambient contemporáneo. Aquí está la fuente."
 };
