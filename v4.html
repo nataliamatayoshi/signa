@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGNA — 90s Underground Radio</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07050f;
+    --green: #c084fc;
+    --green-dim: rgba(192,132,252,0.08);
+    --green-mid: rgba(192,132,252,0.35);
+    --amber: #e879f9;
+    --amber-dim: rgba(232,121,249,0.1);
+    --red: #f472b6;
+    --white: #ede8f5;
+    --muted: #4a3f5c;
+    --surface: #0d0a18;
+    --border: rgba(192,132,252,0.18);
+    --mono: 'Share Tech Mono', monospace;
+    --vt: 'VT323', monospace;
+    --space: 'Space Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SCANLINES */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none; z-index: 999;
+  }
+
+  /* NOISE overlay */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 998; opacity: 0.4;
+  }
+
+  /* HEADER */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0.4;
+  }
+
+  .logo {
+    font-family: var(--vt);
+    font-size: 36px;
+    letter-spacing: 4px;
+    color: var(--green);
+    text-shadow: 0 0 20px rgba(192,132,252,0.6), 0 0 40px rgba(192,132,252,0.2);
+    animation: flicker 8s infinite;
+  }
+  .logo span { color: var(--amber); }
+
+  @keyframes flicker {
+    0%,95%,97%,100% { opacity: 1; }
+    96% { opacity: 0.7; }
+    96.5% { opacity: 1; }
+  }
+
+  .header-right { text-align: right; font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--red); font-size: 12px; font-family: var(--space);
+    letter-spacing: 0.1em;
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--red);
+    animation: pulse 1.2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* MAIN LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: calc(100vh - 70px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-title {
+    font-size: 10px; letter-spacing: 0.15em; color: var(--muted);
+    padding: 0 18px; margin-bottom: 10px; text-transform: uppercase;
+  }
+
+  .genre-btn {
+    width: 100%; padding: 12px 18px;
+    background: none; border: none;
+    color: var(--muted); font-family: var(--mono); font-size: 13px;
+    cursor: pointer; text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .genre-btn:hover { color: var(--green); background: var(--green-dim); }
+  .genre-btn.active {
+    color: var(--green); background: var(--green-dim);
+    border-left-color: var(--green);
+  }
+  .genre-btn .count {
+    font-size: 10px; color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    padding: 2px 6px; border-radius: 3px;
+  }
+  .genre-btn.active .count { color: var(--green-mid); }
+
+  .sidebar-sep {
+    height: 1px; background: var(--border); margin: 12px 0;
+  }
+
+  /* MAIN PLAYER */
+  .main { padding: 24px; overflow-y: auto; }
+
+  /* NOW PLAYING */
+  .now-playing {
+    border: 1px solid var(--border);
+    background: var(--green-dim);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .now-icon { font-family: var(--vt); font-size: 28px; color: var(--amber); flex-shrink: 0; line-height: 1; margin-top: 2px; }
+  .now-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .now-title { font-size: 15px; color: var(--white); line-height: 1.4; }
+  .now-meta { font-size: 11px; color: var(--green-mid); margin-top: 4px; }
+
+  /* PLAYER EMBED */
+  .player-wrap {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    background: #000;
+    position: relative;
+  }
+  .player-wrap iframe {
+    display: block; width: 100%; height: 200px; border: none;
+  }
+  .player-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.85);
+    flex-direction: column; gap: 12px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .player-overlay.hidden { opacity: 0; pointer-events: none; }
+  .play-big {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 2px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    transition: all 0.15s;
+    color: var(--green);
+  }
+  .play-big:hover { background: var(--green-dim); transform: scale(1.05); }
+  .overlay-text { font-size: 13px; color: var(--green-mid); }
+
+  /* TRACKLIST */
+  .section-title {
+    font-size: 10px; letter-spacing: 0.12em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .track-list { display: flex; flex-direction: column; gap: 4px; }
+  .track-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 3px;
+    cursor: pointer; border: 1px solid transparent;
+    transition: all 0.12s;
+  }
+  .track-item:hover { background: var(--green-dim); border-color: var(--border); }
+  .track-item.playing {
+    background: var(--green-dim); border-color: var(--border);
+    border-left: 2px solid var(--green);
+  }
+  .track-num {
+    font-size: 11px; color: var(--muted); width: 20px; text-align: right; flex-shrink: 0;
+  }
+  .track-item.playing .track-num { color: var(--green); }
+  .track-info { flex: 1; min-width: 0; }
+  .track-name { font-size: 13px; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .track-item.playing .track-name { color: var(--green); }
+  .track-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .track-duration { font-size: 11px; color: var(--muted); flex-shrink: 0; font-family: var(--space); }
+
+  /* EQ BARS (playing indicator) */
+  .eq { display: flex; align-items: flex-end; gap: 2px; height: 14px; width: 14px; flex-shrink: 0; }
+  .eq-bar {
+    width: 3px; background: var(--green); border-radius: 1px;
+    animation: eq-anim 0.8s ease-in-out infinite alternate;
+  }
+  .eq-bar:nth-child(1) { animation-delay: 0s; }
+  .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+  .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes eq-anim {
+    from { height: 3px; }
+    to { height: 14px; }
+  }
+  .eq.hidden { display: none; }
+
+  /* FREQ DISPLAY */
+  .freq-bar {
+    height: 40px; margin-bottom: 20px;
+    display: flex; align-items: flex-end; gap: 2px;
+    overflow: hidden;
+  }
+  .freq-col {
+    flex: 1; background: var(--green);
+    opacity: 0.6; border-radius: 1px 1px 0 0;
+    animation: freq 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes freq {
+    from { height: 20%; }
+    to { height: 90%; }
+  }
+
+  /* WAVEFORM */
+  canvas { width: 100%; height: 40px; display: block; margin-bottom: 16px; opacity: 0.6; }
+
+  /* GENRE TAG */
+  .genre-tag {
+    display: inline-block; padding: 3px 8px;
+    border: 1px solid var(--border); border-radius: 2px;
+    font-size: 10px; color: var(--muted); letter-spacing: 0.08em;
+    margin-right: 4px; margin-bottom: 4px; text-transform: uppercase;
+  }
+
+  /* FOOTER TICKER */
+  .ticker-wrap {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    padding: 8px 0;
+    overflow: hidden;
+    z-index: 100;
+  }
+  .ticker {
+    display: flex; gap: 60px;
+    animation: scroll-left 40s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .ticker-item { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+  .ticker-item span { color: var(--green-mid); }
+
+  /* AUTOPLAY CONTROLS */
+  .controls {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .ctrl-btn {
+    padding: 7px 14px; border: 1px solid var(--border);
+    background: none; color: var(--green); font-family: var(--mono); font-size: 12px;
+    cursor: pointer; border-radius: 2px; transition: all 0.12s; letter-spacing: 0.05em;
+  }
+  .ctrl-btn:hover { background: var(--green-dim); }
+  .ctrl-btn.active { background: var(--green-dim); border-color: var(--green); }
+  .ctrl-label { font-size: 11px; color: var(--muted); }
+
+  /* MOBILE */
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); padding: 12px 0; }
+    .genre-btn { padding: 10px 14px; font-size: 12px; }
+    .main { padding: 16px; }
+    .logo { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">SIGNA</div>
+    <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-top:2px;">90s UNDERGROUND ELECTRONIC RADIO</div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div> ON AIR 24/7</div>
+    <div style="margin-top:4px;">REPHLEX · JUNGLE · ACID · BREAKBEAT · FOOTWORK</div>
+    <div id="clock" style="color:var(--green);margin-top:2px;"></div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-title">Género</div>
+    <button class="genre-btn active" onclick="setFilter('genre','all')" id="fg-all">TODOS</button>
+    <button class="genre-btn" onclick="setFilter('genre','braindance')" id="fg-braindance">BRAINDANCE / IDM</button>
+    <button class="genre-btn" onclick="setFilter('genre','acid')" id="fg-acid">ACID HOUSE</button>
+    <button class="genre-btn" onclick="setFilter('genre','jungle')" id="fg-jungle">JUNGLE / D&B</button>
+    <button class="genre-btn" onclick="setFilter('genre','breakbeat')" id="fg-breakbeat">BREAKBEAT</button>
+    <button class="genre-btn" onclick="setFilter('genre','footwork')" id="fg-footwork">JUKE / FOOTWORK</button>
+
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-title">Sello</div>
+    <button class="genre-btn active" onclick="setFilter('label','all')" id="fl-all">TODOS</button>
+    <button class="genre-btn" onclick="setFilter('label','rephlex')" id="fl-rephlex">REPHLEX</button>
+    <button class="genre-btn" onclick="setFilter('label','warp')" id="fl-warp">WARP</button>
+    <button class="genre-btn" onclick="setFilter('label','planet_mu')" id="fl-planet_mu">PLANET MU</button>
+    <button class="genre-btn" onclick="setFilter('label','trax')" id="fl-trax">TRAX RECORDS</button>
+    <button class="genre-btn" onclick="setFilter('label','reinforced')" id="fl-reinforced">REINFORCED</button>
+    <button class="genre-btn" onclick="setFilter('label','metalheadz')" id="fl-metalheadz">METALHEADZ</button>
+    <button class="genre-btn" onclick="setFilter('label','moving_shadow')" id="fl-moving_shadow">MOVING SHADOW</button>
+    <button class="genre-btn" onclick="setFilter('label','suburban_base')" id="fl-suburban_base">SUBURBAN BASE</button>
+    <button class="genre-btn" onclick="setFilter('label','shut_up')" id="fl-shut_up">SHUT UP & DANCE</button>
+    <button class="genre-btn" onclick="setFilter('label','teklife')" id="fl-teklife">TEKLIFE / JUKE</button>
+
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-title" id="filter-result-label">Mostrando todos</div>
+    <div style="padding:0 18px;font-size:11px;color:var(--muted);line-height:1.8;">
+      Música vía YouTube.<br>Todo pre-2000.<br><br>
+      <span style="color:var(--green-mid);">Sin registro · Gratis · 24/7</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" style="padding-bottom:60px;">
+
+    <!-- NOW PLAYING -->
+    <div class="now-playing">
+      <div class="now-icon">▶</div>
+      <div>
+        <div class="now-label">Reproduciendo ahora</div>
+        <div class="now-title" id="np-title">Selecciona un género para comenzar</div>
+        <div class="now-meta" id="np-meta"></div>
+      </div>
+    </div>
+
+    <!-- FREQ VISUALIZER -->
+    <div class="freq-bar" id="freq-bar" style="display:none;">
+    </div>
+
+    <!-- PLAYER -->
+    <div class="player-wrap" id="player-wrap">
+      <iframe id="yt-player" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div class="player-overlay" id="overlay">
+        <div class="play-big" onclick="startRadio()">▶</div>
+        <div class="overlay-text">Elige un género y presiona play</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <button class="ctrl-btn" onclick="prevTrack()">◀ PREV</button>
+      <button class="ctrl-btn" onclick="nextTrack()">NEXT ▶</button>
+      <button class="ctrl-btn active" id="btn-auto" onclick="toggleAuto()">AUTO ∞</button>
+      <button class="ctrl-btn" id="btn-mc" onclick="triggerMC()" style="color:var(--amber);border-color:var(--amber);">◈ MC</button>
+      <span class="ctrl-label" id="ctrl-info"></span>
+    </div>
+
+    <!-- MC PANEL -->
+    <div id="mc-panel" style="display:none;margin-bottom:16px;border:1px solid var(--amber);border-radius:4px;overflow:hidden;">
+      <div style="background:rgba(232,121,249,0.08);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(232,121,249,0.2);">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div id="mc-dot" style="width:8px;height:8px;border-radius:50%;background:var(--amber);"></div>
+          <span style="font-size:11px;color:var(--amber);letter-spacing:0.1em;">MC EN EL AIRE</span>
+        </div>
+        <button onclick="stopMC()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--mono);">✕ CORTAR</button>
+      </div>
+      <div id="mc-text" style="padding:14px 16px;font-size:13px;color:var(--white);line-height:1.8;font-family:var(--mono);min-height:60px;"></div>
+    </div>
+
+    <!-- TRACKLIST -->
+    <div class="section-title">Tracklist</div>
+    <div class="track-list" id="tracklist"></div>
+
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker">
+    <span class="ticker-item">REPHLEX RECORDS · <span>APHEX TWIN · LUKE VIBERT · µ-ZIQ · BOGDAN RACZYNSKI</span></span>
+    <span class="ticker-item">JUNGLE · <span>REINFORCED RECORDS · METALHEADZ · MOVING SHADOW · 1993-1997</span></span>
+    <span class="ticker-item">ACID HOUSE · <span>PHUTURE · DJ PIERRE · TRAX RECORDS · CHICAGO 1987</span></span>
+    <span class="ticker-item">BREAKBEAT · <span>SUBURBAN BASE · SHUT UP AND DANCE · HARDCORE RAVE · UK 1991-1994</span></span>
+    <span class="ticker-item">FOOTWORK · <span>RP BOO · TEKLIFE · CHICAGO JUKE · 160BPM · PURE HEAT</span></span>
+    <span class="ticker-item">REPHLEX RECORDS · <span>APHEX TWIN · LUKE VIBERT · µ-ZIQ · BOGDAN RACZYNSKI</span></span>
+    <span class="ticker-item">JUNGLE · <span>REINFORCED RECORDS · METALHEADZ · MOVING SHADOW · 1993-1997</span></span>
+    <span class="ticker-item">ACID HOUSE · <span>PHUTURE · DJ PIERRE · TRAX RECORDS · CHICAGO 1987</span></span>
+    <span class="ticker-item">BREAKBEAT · <span>SUBURBAN BASE · SHUT UP AND DANCE · HARDCORE RAVE · UK 1991-1994</span></span>
+    <span class="ticker-item">FOOTWORK · <span>RP BOO · TEKLIFE · CHICAGO JUKE · 160BPM · PURE HEAT</span></span>
+  </div>
+</div>
+
+<script>
+// All tracks with genre + label tags for combined filtering
+const ALL_TRACKS = [
+  // BRAINDANCE / IDM
+  { title: 'Aphex Twin — Selected Ambient Works 85-92', meta: 'Rephlex / Apollo · 1992', id: 'Xw5AiRVqfqk', dur: '1:14:00', genre: 'braindance', label: 'rephlex', artist: 'Aphex Twin' },
+  { title: 'Aphex Twin — ...I Care Because You Do', meta: 'Warp Records · 1995', id: 'WCc1qjMBFdk', dur: '1:05:00', genre: 'braindance', label: 'warp', artist: 'Aphex Twin' },
+  { title: 'Aphex Twin — Richard D. James Album', meta: 'Warp Records · 1996', id: 'vMBOBE0aB_E', dur: '33:00', genre: 'braindance', label: 'warp', artist: 'Aphex Twin' },
+  { title: 'Aphex Twin — Classic Tracks Mix 90s', meta: 'Selected Works · 1993-1999', id: 'M9xoTygJMMs', dur: '1:30:00', genre: 'braindance', label: 'rephlex', artist: 'Aphex Twin' },
+  { title: 'Luke Vibert — Plug — Drum n Bass for Papa', meta: 'Rephlex · 1996', id: 'TGBhmtGqVuc', dur: '58:00', genre: 'braindance', label: 'rephlex', artist: 'Luke Vibert' },
+  { title: 'Luke Vibert / Wagon Christ — Throbbing Pouch', meta: 'Rising High · 1995', id: 'Kkx87-1YXGE', dur: '52:00', genre: 'braindance', label: 'rephlex', artist: 'Luke Vibert' },
+  { title: 'µ-Ziq — Lunatic Harness (Full Album)', meta: 'Planet Mu · 1997', id: 'fWHRdBPJsfc', dur: '1:02:00', genre: 'braindance', label: 'planet_mu', artist: 'µ-Ziq' },
+  { title: 'Bogdan Raczynski — Samurai Math Beats', meta: 'Rephlex · 1999', id: 'gFuGdPbYCao', dur: '47:00', genre: 'braindance', label: 'rephlex', artist: 'Bogdan Raczynski' },
+  // ACID HOUSE
+  { title: 'Phuture — Acid Tracks (Original 1987)', meta: 'Trax Records · 1987', id: 'za-CN_MQeJY', dur: '10:00', genre: 'acid', label: 'trax', artist: 'Phuture' },
+  { title: 'Classic Acid House Mix 1987-1991', meta: 'Trax Records / DJ International', id: '7IHZmakyAcU', dur: '1:00:00', genre: 'acid', label: 'trax', artist: 'Various' },
+  { title: 'Acid House Classics — Full Mix', meta: 'Chicago / UK · 1988-1993', id: 'GNLqDFJ4H5k', dur: '1:15:00', genre: 'acid', label: 'trax', artist: 'Various' },
+  { title: 'Larry Heard — Can You Feel It', meta: 'Trax Records · 1986', id: 'qrHWqFPBzlA', dur: '7:00', genre: 'acid', label: 'trax', artist: 'Larry Heard' },
+  { title: 'Acid House Party — Warp Records Early Years', meta: 'Warp · Sheffield UK · 1989-1992', id: 'EkFNz68XSNE', dur: '55:00', genre: 'acid', label: 'warp', artist: 'Various' },
+  { title: 'DJ Pierre — Wild Pitch Mix (Acid House)', meta: 'Classic Sets · 1989-1993', id: 'Rc_7B0Oevlo', dur: '1:00:00', genre: 'acid', label: 'trax', artist: 'DJ Pierre' },
+  { title: 'Acid House Chicago Classics Mix', meta: 'Trax / DJ International · 1986-1991', id: 'fJIgKjFnTls', dur: '1:20:00', genre: 'acid', label: 'trax', artist: 'Various' },
+  // JUNGLE / D&B
+  { title: 'Old School Jungle Mix 1993-1995', meta: 'Reinforced Records / Moving Shadow', id: 'byoSRf-8MPo', dur: '1:00:00', genre: 'jungle', label: 'reinforced', artist: 'Various' },
+  { title: 'Goldie — Timeless (Full Album)', meta: 'Metalheadz · 1995', id: 'Jm7ZJCM7VM0', dur: '1:37:00', genre: 'jungle', label: 'metalheadz', artist: 'Goldie' },
+  { title: 'Reinforced Records Classics Mix', meta: '4hero · Marc Mac · Dego · 1992-1996', id: 'LlFB3P1SFnk', dur: '1:00:00', genre: 'jungle', label: 'reinforced', artist: 'Various' },
+  { title: 'Old School Jungle Hardcore Mix 1993', meta: 'Suburban Base / Reinforced · UK Rave', id: 'GVbewUhKAsc', dur: '1:15:00', genre: 'jungle', label: 'suburban_base', artist: 'Various' },
+  { title: 'Moving Shadow Records Mix', meta: 'Omni Trio / Rob Playford · 1993-1997', id: 'dFb5fXxSJlc', dur: '55:00', genre: 'jungle', label: 'moving_shadow', artist: 'Various' },
+  { title: 'Grooverider — Prototype Years Mix', meta: 'Metalheadz · 1994-1996', id: '09tSg0zL2cA', dur: '1:00:00', genre: 'jungle', label: 'metalheadz', artist: 'Grooverider' },
+  { title: 'Shut Up and Dance Records Mix', meta: 'UK Jungle Pioneers · 1991-1995', id: 'j3EKXGnzaS4', dur: '1:10:00', genre: 'jungle', label: 'shut_up', artist: 'Various' },
+  { title: 'LTJ Bukem — Logical Progression Mix', meta: 'Good Looking Records · 1995-1996', id: 'dCNzBVmBBUQ', dur: '1:00:00', genre: 'jungle', label: 'moving_shadow', artist: 'LTJ Bukem' },
+  // BREAKBEAT
+  { title: 'UK Hardcore Rave Mix 1991-1993', meta: 'Suburban Base / Moving Shadow', id: '7GWAbKLZzZ0', dur: '1:00:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
+  { title: 'Breakbeat Hardcore Classics 1992', meta: 'UK Rave Scene · Essential Mix', id: 'iNMiTGNOsZo', dur: '1:15:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
+  { title: 'Prodigy — Music for the Jilted Generation', meta: 'XL Recordings · 1994', id: 'b0Wm1LrXFuI', dur: '1:10:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Prodigy' },
+  { title: 'Old School Breakbeat Mix 1990-1994', meta: 'UK Rave / Hardcore · Classic Breaks', id: 'pFkI-e2vb2Q', dur: '1:00:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
+  { title: 'Amen Break History Mix', meta: 'The break that changed everything · 1991-1996', id: 'V48YBmSSuss', dur: '55:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
+  { title: 'Suburban Base Records Classic Mix', meta: 'Essex UK · 1991-1995', id: 'fJIgKjFnTls', dur: '1:20:00', genre: 'breakbeat', label: 'suburban_base', artist: 'Various' },
+  { title: 'Shut Up and Dance — Hardcore Mix', meta: 'Shut Up and Dance Records · 1991-1993', id: 'j3EKXGnzaS4', dur: '1:00:00', genre: 'breakbeat', label: 'shut_up', artist: 'Various' },
+  // JUKE / FOOTWORK
+  { title: 'Chicago Juke Classics — Early Footwork', meta: 'Chicago South Side · 1990s', id: 'N-1yM7RB2To', dur: '1:00:00', genre: 'footwork', label: 'teklife', artist: 'Various' },
+  { title: 'RP Boo — Classics & Rarities Mix', meta: 'Chicago Footwork Pioneer · 1990s', id: 'nxLQAfmpOZs', dur: '45:00', genre: 'footwork', label: 'teklife', artist: 'RP Boo' },
+  { title: 'Chicago Ghetto House Mix 1990s', meta: 'The roots of footwork · DJ Deeon era', id: 'kwBBEijKVDY', dur: '1:00:00', genre: 'footwork', label: 'teklife', artist: 'Various' },
+  { title: 'Classic Juke Music Chicago Vol.1', meta: 'Ghetto House · 160BPM', id: 'Ol-4ygIEYh4', dur: '55:00', genre: 'footwork', label: 'teklife', artist: 'Various' },
+  { title: 'Early Chicago Footwork & Juke Mix', meta: 'Pre-2000 · Underground Chicago', id: 'V9m-tPNzEj4', dur: '1:00:00', genre: 'footwork', label: 'teklife', artist: 'Various' },
+  { title: 'Ghetto House Classics — Chicago 1990s', meta: 'DJ Rashad / Teklife roots · Early sound', id: 'fGgjBBLxmX4', dur: '50:00', genre: 'footwork', label: 'teklife', artist: 'Various' },
+];
+
+const LABEL_NAMES = {
+  all: 'Todos los sellos', rephlex: 'Rephlex Records', warp: 'Warp Records',
+  planet_mu: 'Planet Mu', trax: 'Trax Records', reinforced: 'Reinforced Records',
+  metalheadz: 'Metalheadz', moving_shadow: 'Moving Shadow', suburban_base: 'Suburban Base',
+  shut_up: 'Shut Up and Dance', teklife: 'Teklife / Juke'
+};
+const GENRE_NAMES = {
+  all: 'Todos los géneros', braindance: 'Braindance / IDM', acid: 'Acid House',
+  jungle: 'Jungle / D&B', breakbeat: 'Breakbeat', footwork: 'Juke / Footwork'
+};
+
+// MC genre mapping for pre-written lines
+const MC_GENRE_MAP = {
+  braindance: 'rephlex', acid: 'acid', jungle: 'jungle', breakbeat: 'breakbeat', footwork: 'footwork'
+};
+
+let activeGenre = 'all';
+let activeLabel = 'all';
+let currentIdx = 0;
+let autoplay = true;
+let isPlaying = false;
+let filteredTracks = [];
+let dailyPlaylist = [];
+
+function getFilteredTracks() {
+  return ALL_TRACKS.filter(t => {
+    const gOk = activeGenre === 'all' || t.genre === activeGenre;
+    const lOk = activeLabel === 'all' || t.label === activeLabel;
+    return gOk && lOk;
+  });
+}
+
+function setFilter(type, val) {
+  if (type === 'genre') {
+    activeGenre = val;
+    document.querySelectorAll('[id^="fg-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById('fg-' + val).classList.add('active');
+  } else {
+    activeLabel = val;
+    document.querySelectorAll('[id^="fl-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById('fl-' + val).classList.add('active');
+  }
+  filteredTracks = getFilteredTracks();
+  if (filteredTracks.length === 0) {
+    document.getElementById('filter-result-label').textContent = 'Sin resultados';
+    document.getElementById('tracklist').innerHTML = '<div style="padding:20px 0;color:var(--muted);font-size:12px;">Ningún track coincide con los filtros.</div>';
+    return;
+  }
+  const gl = GENRE_NAMES[activeGenre];
+  const ll = LABEL_NAMES[activeLabel];
+  document.getElementById('filter-result-label').textContent = filteredTracks.length + ' tracks';
+  currentIdx = 0;
+  buildDailyPlaylist();
+  renderTracklist();
+  const trackIdx = dailyPlaylist[0];
+  loadTrack(trackIdx);
+}
+
+// --- DAILY PLAYLIST SYSTEM ---
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+}
+
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function dateSeed() {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth()+1) * 100 + d.getDate();
+}
+
+function getStorage(key, fallback) {
+  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+}
+function setStorage(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+function buildDailyPlaylist() {
+  filteredTracks = getFilteredTracks();
+  if (filteredTracks.length === 0) { dailyPlaylist = []; return; }
+  const filterKey = activeGenre + '_' + activeLabel;
+  const storageKey = 'ps_pl_' + filterKey + '_' + todayKey();
+  const playedKey  = 'ps_played_' + filterKey;
+
+  let playlist = getStorage(storageKey, null);
+  if (!playlist) {
+    const allIds = filteredTracks.map((_, i) => i);
+    let played = getStorage(playedKey, []);
+    if (played.length >= allIds.length) { played = []; setStorage(playedKey, []); }
+    const remaining = allIds.filter(i => !played.includes(i));
+    playlist = seededShuffle(remaining, dateSeed() + filterKey.charCodeAt(0));
+    setStorage(storageKey, playlist);
+  }
+  dailyPlaylist = playlist;
+}
+
+function markPlayed(idx) {
+  const filterKey = activeGenre + '_' + activeLabel;
+  const played = getStorage('ps_played_' + filterKey, []);
+  if (!played.includes(idx)) { played.push(idx); setStorage('ps_played_' + filterKey, played); }
+}
+
+function playlistInfo() {
+  const filterKey = activeGenre + '_' + activeLabel;
+  const played = getStorage('ps_played_' + filterKey, []);
+  return { total: dailyPlaylist.length, playedAll: played.length, totalAll: filteredTracks.length };
+}
+
+// --- CORE FUNCTIONS ---
+
+function renderTracklist() {
+  if (!dailyPlaylist.length) return;
+  const list = document.getElementById('tracklist');
+  list.innerHTML = dailyPlaylist.map((trackIdx, pos) => {
+    const t = filteredTracks[trackIdx];
+    const isCurrentPos = pos === currentIdx;
+    const genreBadge = GENRE_NAMES[t.genre] || t.genre;
+    const labelBadge = LABEL_NAMES[t.label] || t.label;
+    return `<div class="track-item ${isCurrentPos ? 'playing' : ''}" onclick="playPosition(${pos})">
+      <div class="track-num">${String(pos+1).padStart(2,'0')}</div>
+      <div class="eq ${isCurrentPos && isPlaying ? '' : 'hidden'}">
+        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+      </div>
+      <div class="track-info">
+        <div class="track-name">${t.title}</div>
+        <div class="track-sub">${t.meta}
+          <span style="margin-left:6px;opacity:0.6;font-size:10px;">[${genreBadge} · ${labelBadge}]</span>
+        </div>
+      </div>
+      <div class="track-duration">${t.dur}</div>
+    </div>`;
+  }).join('');
+}
+
+function playPosition(pos) {
+  currentIdx = pos;
+  loadTrack(dailyPlaylist[pos]);
+}
+
+function loadTrack(trackIdx) {
+  if (filteredTracks.length === 0) return;
+  const track = filteredTracks[trackIdx];
+  isPlaying = true;
+  markPlayed(trackIdx);
+
+  document.getElementById('np-title').textContent = track.title;
+  document.getElementById('np-meta').textContent = track.meta + ' · ' + LABEL_NAMES[track.label] + ' · ' + todayKey();
+  document.getElementById('overlay').classList.add('hidden');
+
+  const info = playlistInfo();
+  document.getElementById('ctrl-info').textContent =
+    (currentIdx+1) + ' / ' + info.total + ' · ' + info.playedAll + '/' + info.totalAll + ' vistos';
+
+  const freq = document.getElementById('freq-bar');
+  freq.style.display = 'flex';
+  freq.innerHTML = Array.from({length: 48}, (_, i) => {
+    const delay = (Math.random() * 2).toFixed(2);
+    const dur = (0.8 + Math.random() * 1.2).toFixed(2);
+    return `<div class="freq-col" style="animation-delay:${delay}s;animation-duration:${dur}s;"></div>`;
+  }).join('');
+
+  document.getElementById('yt-player').src =
+    `https://www.youtube.com/embed/${track.id}?autoplay=1&controls=1&rel=0&modestbranding=1&iv_load_policy=3`;
+
+  renderTracklist();
+  if (isPlaying) setTimeout(() => triggerMC(true), 400);
+}
+
+function nextTrack() {
+  if (!dailyPlaylist.length) return;
+  currentIdx = (currentIdx + 1) % dailyPlaylist.length;
+  loadTrack(dailyPlaylist[currentIdx]);
+}
+
+function prevTrack() {
+  if (!dailyPlaylist.length) return;
+  currentIdx = (currentIdx - 1 + dailyPlaylist.length) % dailyPlaylist.length;
+  loadTrack(dailyPlaylist[currentIdx]);
+}
+
+function toggleAuto() {
+  autoplay = !autoplay;
+  const btn = document.getElementById('btn-auto');
+  btn.classList.toggle('active', autoplay);
+  btn.textContent = autoplay ? 'AUTO ∞' : 'AUTO OFF';
+}
+
+function startRadio() {
+  setFilter('genre','all');
+}
+
+function clock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = h + ':' + m + ':' + s + ' · LIVE';
+}
+setInterval(clock, 1000);
+clock();
+
+filteredTracks = getFilteredTracks();
+buildDailyPlaylist();
+renderTracklist();
+if (dailyPlaylist.length) loadTrack(dailyPlaylist[0]);
+document.getElementById('filter-result-label').textContent = filteredTracks.length + ' tracks';
+
+// --- MC SYSTEM — sin API, textos pre-escritos ---
+let mcSpeaking = false;
+let mcUtterance = null;
+
+const MC_LINES = {
+  rephlex: [
+    "Rephlex Records. Fundado en 1991 por Richard D. James y Grant Wilson-Claridge en Cornwall. El nombre viene de un reflejo condicionado. Este sello era la respuesta punk al IDM que se estaba poniendo demasiado serio. Aquí todo sonaba como si lo hubiera hecho un genio de 16 años en un cuarto sin ventanas. Esto es braindance puro.",
+    "Aphex Twin grabó los Selected Ambient Works 85-92 cuando tenía entre 14 y 20 años. Gran parte de ese material lo hizo durmiendo — literalmente entrenó su mente para componer en sueños lúcidos. Decía que algunas melodías las escuchó primero mientras dormía y las reprodujo al despertar. Escucha con atención.",
+    "Luke Vibert tiene más de 10 alias. Wagon Christ, Plug, Amen Andrews, Kerrier District. Como Plug en 1996 sacó Drum n Bass for Papa en Rephlex, posiblemente el disco de drum and bass más raro que existe — demasiado raro para la escena jungle, demasiado jungle para la escena IDM. No le importó a nadie en su época. Ahora es una joya de culto.",
+    "µ-Ziq es Mike Paradinas, fundador de Planet Mu. Antes de tener su propio sello vivía en la órbita de Rephlex. Lunatic Harness de 1997 mezcla melodías que parecen de videojuego roto con beats que no caben en ningún tempo fijo. Influencia directa en todo lo que vino después. Esto es lo que sonaba en el futuro de 1997.",
+    "Bogdan Raczynski era un productor polaco afincado en Japón que Aphex Twin fichó para Rephlex casi de casualidad. Samurai Math Beats de 1999 es breakcore avant la lettre — velocidad, caos, estructura matemática escondida debajo del ruido. Muy pocos lo escucharon en su momento. El tiempo le dio la razón."
+  ],
+  acid: [
+    "Acid Tracks de Phuture salió en 1987 en Trax Records. Dicen que la línea de bajo de la Roland TB-303 fue un accidente — DJ Pierre la programó mal y en vez de sonar como un bajo normal empezó a hacer ese squelch característico. En vez de corregirlo lo dejaron. Ese error cambió la historia de la música electrónica para siempre.",
+    "La Roland TB-303 Bass Line costaba 80 dólares de segunda mano en Chicago en 1986. Fue un fracaso comercial total cuando salió — se suponía que era un acompañante portátil para guitarristas. Los músicos la vendieron rápido. Los productores de house la compraron por nada y descubrieron que si la programabas mal sonaba diferente a cualquier cosa que existiera. Nació el acid.",
+    "Trax Records era un sello tan caótico que muchos artistas nunca cobraron sus regalías. Larry Heard, DJ Pierre, Frankie Knuckles — todos tuvieron conflictos con el sello. Pero sin Trax no existe el house ni el acid. Larry Heard grabó Can You Feel It en una tarde, con una drum machine y un sintetizador. Tres tracks que definieron un género.",
+    "La escena acid house llegó al Reino Unido en 1987 y explotó en 1988. Ese verano lo llamaron the Second Summer of Love. Miles de personas en campos y almacenes abandonados. La policía no sabía qué era. El gobierno tardó años en reaccionar. Warp Records nació de esa escena en Sheffield. Esto es el origen de todo.",
+    "DJ Pierre, Spanky y Herb J formaron Phuture en Chicago con 17 y 18 años. Antes de Acid Tracks nadie había usado la 303 así. El track duró más de 10 minutos porque en los clubs de Chicago los DJs necesitaban tiempo para mezclar. Ron Hardy lo tocó en el Music Box repetidamente hasta que la gente enloqueció. Así se probaban los tracks en esa época."
+  ],
+  jungle: [
+    "Reinforced Records fue fundado en Dollis Hill, Londres, en 1990 por Marc Mac y Dego — los mismos que después formarían 4hero. Operaban desde el cuarto de un departamento. Todo se hacía a mano — las portadas, los envíos, la distribución. Eran cuatro amigos haciendo música para ellos mismos. El resultado fue el catálogo más importante del jungle.",
+    "El Amen break — la muestra de batería más sampleada de la historia — viene de una canción de 1969 de The Winstons llamada Amen Brother. El baterista Gregory Coleman nunca cobró un centavo de regalías. Se calcula que ese break de seis segundos ha aparecido en más de 2000 producciones. Es la columna vertebral del jungle y del drum and bass.",
+    "Goldie empezó como graffitero en Birmingham antes de entrar a la escena musical. Timeless de 1995 fue el primer álbum de drum and bass que entró al top 10 del Reino Unido. La pista principal, Inner City Life, dura casi quince minutos en su versión completa. Metalheadz, su sello, se convirtió en la referencia del darkstep y el neurofunk.",
+    "Moving Shadow Records era el lado más melódico del jungle. Rob Playford lo fundó en 1990 en su dormitorio. Omni Trio fue su artista estrella — textures cálidas, breaks perfectamente cortados, una sensación de melancolía urbana que nadie más capturaba igual. Mientras Reinforced era oscuridad, Moving Shadow era el amanecer después de la fiesta.",
+    "Grooverider y Fabio tenían una residencia en el club Rage en Heaven, Londres, desde 1988. Ahí es donde el hardcore rave se transformó en jungle. Grooverider tocaba los tracks a velocidades más altas, pitch shifteaba los breaks, y la gente bailaba diferente. Todo pasó en ese club, esos dos DJs, esas noches de jueves."
+  ],
+  breakbeat: [
+    "El breakbeat hardcore UK de 1991 a 1993 fue el momento más caótico y creativo de la música de baile británica. Samples de todo — hip hop americano, reggae, soul, jazz — pasados por drum machines a 140 BPM. Suburban Base Records en Essex era uno de los sellos más activos. Lo llamaban ardkore. Era puro caos organizado.",
+    "The Prodigy empezó como un proyecto de Liam Howlett para fiestas rave en Essex. Experience de 1992 fue un éxito inmediato. Pero Music for the Jilted Generation de 1994 fue otra cosa — más oscuro, más agresivo, una respuesta directa a la Criminal Justice Act que el gobierno británico usó para criminalizar los raves. El arte como protesta.",
+    "El Amen break llegó al hardcore UK a través de los productores de hip hop americano. En manos de los productores británicos se convirtió en algo diferente — más rápido, más cortado, más agresivo. Un break de seis segundos que se multiplicó en cientos de versiones diferentes. La base rítmica de toda una época.",
+    "Suburban Base Records en Romford, Essex, era el epicentro del ardkore. DJ Hype, Remarc, Nookie — todos pasaron por ese sello. Las portadas eran fluorescentes, los títulos absurdos, los tracks duraban lo justo para que los DJs pudieran mezclar. Música hecha para las 4am en un almacén sin ventanas. No necesitaba nada más.",
+    "Los raves ilegales en el Reino Unido de 1991 a 1994 convocaban a decenas de miles de personas. Se organizaban por teléfono, con coordenadas que se pasaban de mano en mano. La policía los perseguía. El gobierno los ilegalizó con la Criminal Justice Act de 1994. Pero para entonces el hardcore ya se había convertido en jungle y drum and bass. No pudieron pararlo."
+  ],
+  footwork: [
+    "El footwork nació en los south side projects de Chicago en los años 90. Evolución directa del ghetto house y el juke — música hecha para las batallas de baile, donde los moves son tan rápidos que parece que los pies no tocan el suelo. 160 BPM. Samples cortados al milímetro. RP Boo es el pionero absoluto — lleva en esto desde los 90.",
+    "El ghetto house de Chicago era la versión más cruda y directa del house music. Sin pretensiones, sin producción costosa, hecho en computadoras baratas con samples de lo que hubiera disponible. DJ Deeon, DJ Funk, Traxman — nombres que la escena house mainstream ignoró completamente. La comunidad lo sostuvo sola durante años.",
+    "El juke y el footwork de Chicago son géneros que existieron casi en secreto durante años. No había sellos grandes, no había prensa especializada, no había distribución internacional. Era música para una comunidad específica, en barrios específicos, para competencias de baile específicas. Así de pura es cuando la música se hace sin pensar en el mercado.",
+    "RP Boo — Kavain Space — lleva produciendo footwork desde los años 90 en Chicago. Su primer lanzamiento oficial, Legacy, no salió hasta 2013 en Planet Mu. Décadas de producción underground antes de que alguien de afuera prestara atención. Eso es lo que hace que esto suene diferente a todo — no fue hecho para ti. Fue hecho para la comunidad.",
+    "La velocidad del footwork — 160 BPM — hace que los samples suenen irreconocibles. Una voz, un riff de funk, un efecto de sonido — cortados en fracciones de segundo y repetidos en patrones que el cerebro tarda en decodificar. Es música diseñada para el cuerpo primero, para los oídos después. Cierra los ojos y deja que entre."
+  ]
+}
+
+function getMCLine(genre) {
+  const lines = MC_LINES[genre] || MC_LINES['rephlex'];
+  const idx = Math.floor(Math.random() * lines.length);
+  return lines[idx];
+}
+
+function mutePlayer() {
+  document.getElementById('yt-player').style.opacity = '0.25';
+}
+function unmutePlayer() {
+  document.getElementById('yt-player').style.opacity = '1';
+}
+
+function stopMC() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  mcSpeaking = false;
+  document.getElementById('mc-panel').style.display = 'none';
+  document.getElementById('mc-dot').style.animation = '';
+  unmutePlayer();
+}
+
+function triggerMC(auto = false) {
+  if (mcSpeaking) stopMC();
+
+  const currentTrack = filteredTracks[dailyPlaylist[currentIdx]];
+  const mcGenreKey = currentTrack ? (MC_GENRE_MAP[currentTrack.genre] || 'rephlex') : 'rephlex';
+  const text = getMCLine(mcGenreKey);
+  const panel = document.getElementById('mc-panel');
+  const textEl = document.getElementById('mc-text');
+
+  panel.style.display = 'block';
+  textEl.textContent = text;
+  mutePlayer();
+
+  const dot = document.getElementById('mc-dot');
+  dot.style.animation = 'pulse 0.8s infinite';
+
+  if ('speechSynthesis' in window) {
+    mcSpeaking = true;
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'es-ES';
+    utt.rate = 0.92;
+    utt.pitch = 0.88;
+
+    const setVoice = () => {
+      const voices = speechSynthesis.getVoices();
+      const v = voices.find(v => v.lang.startsWith('es') && v.name.toLowerCase().includes('male'))
+        || voices.find(v => v.lang.startsWith('es'))
+        || voices[0];
+      if (v) utt.voice = v;
+      utt.onend = () => {
+        mcSpeaking = false;
+        setTimeout(() => {
+          panel.style.display = 'none';
+          dot.style.animation = '';
+          unmutePlayer();
+        }, 1000);
+      };
+      utt.onerror = () => { mcSpeaking = false; unmutePlayer(); };
+      speechSynthesis.speak(utt);
+    };
+
+    if (speechSynthesis.getVoices().length > 0) setVoice();
+    else speechSynthesis.onvoiceschanged = setVoice;
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGNNEL — 90s Underground Radio</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07050f;
+    --green: #c084fc;
+    --green-dim: rgba(192,132,252,0.08);
+    --green-mid: rgba(192,132,252,0.35);
+    --amber: #e879f9;
+    --amber-dim: rgba(232,121,249,0.1);
+    --red: #f472b6;
+    --white: #ede8f5;
+    --muted: #4a3f5c;
+    --surface: #0d0a18;
+    --border: rgba(192,132,252,0.18);
+    --mono: 'Share Tech Mono', monospace;
+    --vt: 'VT323', monospace;
+    --space: 'Space Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SCANLINES */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none; z-index: 999;
+  }
+
+  /* NOISE overlay */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 998; opacity: 0.4;
+  }
+
+  /* HEADER */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0.4;
+  }
+
+  .logo {
+    font-family: var(--vt);
+    font-size: 36px;
+    letter-spacing: 4px;
+    color: var(--green);
+    text-shadow: 0 0 20px rgba(192,132,252,0.6), 0 0 40px rgba(192,132,252,0.2);
+    animation: flicker 8s infinite;
+  }
+  .logo span { color: var(--amber); }
+
+  @keyframes flicker {
+    0%,95%,97%,100% { opacity: 1; }
+    96% { opacity: 0.7; }
+    96.5% { opacity: 1; }
+  }
+
+  .header-right { text-align: right; font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--red); font-size: 12px; font-family: var(--space);
+    letter-spacing: 0.1em;
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--red);
+    animation: pulse 1.2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* MAIN LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: calc(100vh - 70px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-title {
+    font-size: 10px; letter-spacing: 0.15em; color: var(--muted);
+    padding: 0 18px; margin-bottom: 10px; text-transform: uppercase;
+  }
+
+  .genre-btn {
+    width: 100%; padding: 12px 18px;
+    background: none; border: none;
+    color: var(--muted); font-family: var(--mono); font-size: 13px;
+    cursor: pointer; text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .genre-btn:hover { color: var(--green); background: var(--green-dim); }
+  .genre-btn.active {
+    color: var(--green); background: var(--green-dim);
+    border-left-color: var(--green);
+  }
+  .genre-btn .count {
+    font-size: 10px; color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    padding: 2px 6px; border-radius: 3px;
+  }
+  .genre-btn.active .count { color: var(--green-mid); }
+
+  .sidebar-sep {
+    height: 1px; background: var(--border); margin: 12px 0;
+  }
+
+  /* MAIN PLAYER */
+  .main { padding: 24px; overflow-y: auto; }
+
+  /* NOW PLAYING */
+  .now-playing {
+    border: 1px solid var(--border);
+    background: var(--green-dim);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .now-icon { font-family: var(--vt); font-size: 28px; color: var(--amber); flex-shrink: 0; line-height: 1; margin-top: 2px; }
+  .now-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .now-title { font-size: 15px; color: var(--white); line-height: 1.4; }
+  .now-meta { font-size: 11px; color: var(--green-mid); margin-top: 4px; }
+
+  /* PLAYER EMBED */
+  .player-wrap {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    background: #000;
+    position: relative;
+  }
+  .player-wrap iframe {
+    display: block; width: 100%; height: 200px; border: none;
+  }
+  .player-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.85);
+    flex-direction: column; gap: 12px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .player-overlay.hidden { opacity: 0; pointer-events: none; }
+  .play-big {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 2px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    transition: all 0.15s;
+    color: var(--green);
+  }
+  .play-big:hover { background: var(--green-dim); transform: scale(1.05); }
+  .overlay-text { font-size: 13px; color: var(--green-mid); }
+
+  /* TRACKLIST */
+  .section-title {
+    font-size: 10px; letter-spacing: 0.12em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .track-list { display: flex; flex-direction: column; gap: 4px; }
+  .track-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 3px;
+    cursor: pointer; border: 1px solid transparent;
+    transition: all 0.12s;
+  }
+  .track-item:hover { background: var(--green-dim); border-color: var(--border); }
+  .track-item.playing {
+    background: var(--green-dim); border-color: var(--border);
+    border-left: 2px solid var(--green);
+  }
+  .track-num {
+    font-size: 11px; color: var(--muted); width: 20px; text-align: right; flex-shrink: 0;
+  }
+  .track-item.playing .track-num { color: var(--green); }
+  .track-info { flex: 1; min-width: 0; }
+  .track-name { font-size: 13px; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .track-item.playing .track-name { color: var(--green); }
+  .track-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .track-duration { font-size: 11px; color: var(--muted); flex-shrink: 0; font-family: var(--space); }
+
+  /* EQ BARS (playing indicator) */
+  .eq { display: flex; align-items: flex-end; gap: 2px; height: 14px; width: 14px; flex-shrink: 0; }
+  .eq-bar {
+    width: 3px; background: var(--green); border-radius: 1px;
+    animation: eq-anim 0.8s ease-in-out infinite alternate;
+  }
+  .eq-bar:nth-child(1) { animation-delay: 0s; }
+  .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+  .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes eq-anim {
+    from { height: 3px; }
+    to { height: 14px; }
+  }
+  .eq.hidden { display: none; }
+
+  /* FREQ DISPLAY */
+  .freq-bar {
+    height: 40px; margin-bottom: 20px;
+    display: flex; align-items: flex-end; gap: 2px;
+    overflow: hidden;
+  }
+  .freq-col {
+    flex: 1; background: var(--green);
+    opacity: 0.6; border-radius: 1px 1px 0 0;
+    animation: freq 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes freq {
+    from { height: 20%; }
+    to { height: 90%; }
+  }
+
+  /* WAVEFORM */
+  canvas { width: 100%; height: 40px; display: block; margin-bottom: 16px; opacity: 0.6; }
+
+  /* GENRE TAG */
+  .genre-tag {
+    display: inline-block; padding: 3px 8px;
+    border: 1px solid var(--border); border-radius: 2px;
+    font-size: 10px; color: var(--muted); letter-spacing: 0.08em;
+    margin-right: 4px; margin-bottom: 4px; text-transform: uppercase;
+  }
+
+  /* FOOTER TICKER */
+  .ticker-wrap {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    padding: 8px 0;
+    overflow: hidden;
+    z-index: 100;
+  }
+  .ticker {
+    display: flex; gap: 60px;
+    animation: scroll-left 40s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .ticker-item { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+  .ticker-item span { color: var(--green-mid); }
+
+  /* AUTOPLAY CONTROLS */
+  .controls {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .ctrl-btn {
+    padding: 7px 14px; border: 1px solid var(--border);
+    background: none; color: var(--green); font-family: var(--mono); font-size: 12px;
+    cursor: pointer; border-radius: 2px; transition: all 0.12s; letter-spacing: 0.05em;
+  }
+  .ctrl-btn:hover { background: var(--green-dim); }
+  .ctrl-btn.active { background: var(--green-dim); border-color: var(--green); }
+  .ctrl-label { font-size: 11px; color: var(--muted); }
+
+  /* MOBILE */
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); padding: 12px 0; }
+    .genre-btn { padding: 10px 14px; font-size: 12px; }
+    .main { padding: 16px; }
+    .logo { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">SIGNNEL</div>
+    <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-top:2px;">90s UNDERGROUND ELECTRONIC RADIO</div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div> ON AIR 24/7</div>
+    <div style="margin-top:4px;">REPHLEX · JUNGLE · ACID · BREAKBEAT · FOOTWORK</div>
+    <div id="clock" style="color:var(--green);margin-top:2px;"></div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-title">Géneros</div>
+
+    <button class="genre-btn active" onclick="setGenre('rephlex')" id="btn-rephlex">
+      REPHLEX RECORDS <span class="count">8</span>
+    </button>
+    <button class="genre-btn" onclick="setGenre('acid')" id="btn-acid">
+      ACID HOUSE <span class="count">7</span>
+    </button>
+    <button class="genre-btn" onclick="setGenre('jungle')" id="btn-jungle">
+      JUNGLE / D&B <span class="count">8</span>
+    </button>
+    <button class="genre-btn" onclick="setGenre('breakbeat')" id="btn-breakbeat">
+      BREAKBEAT <span class="count">7</span>
+    </button>
+    <button class="genre-btn" onclick="setGenre('footwork')" id="btn-footwork">
+      JUKE / FOOTWORK <span class="count">6</span>
+    </button>
+
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-title">MC en vivo</div>
+    <div style="padding:0 18px 12px;">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ANTHROPIC API KEY</div>
+      <input type="password" id="api-key" placeholder="sk-ant-..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:7px 9px;color:var(--green);font-family:var(--mono);font-size:11px;outline:none;" oninput="checkApiKey()" />
+      <div id="api-status" style="font-size:10px;color:var(--muted);margin-top:5px;">Ingresa key para activar MC</div>
+    </div>
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-title">Info</div>
+    <div style="padding:0 18px;font-size:11px;color:var(--muted);line-height:1.8;">
+      Música vía YouTube.<br>Todo pre-2000.<br><br>
+      <span style="color:var(--green-mid);">Sin registro · Gratis · 24/7</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" style="padding-bottom:60px;">
+
+    <!-- NOW PLAYING -->
+    <div class="now-playing">
+      <div class="now-icon">▶</div>
+      <div>
+        <div class="now-label">Reproduciendo ahora</div>
+        <div class="now-title" id="np-title">Selecciona un género para comenzar</div>
+        <div class="now-meta" id="np-meta"></div>
+      </div>
+    </div>
+
+    <!-- FREQ VISUALIZER -->
+    <div class="freq-bar" id="freq-bar" style="display:none;">
+    </div>
+
+    <!-- PLAYER -->
+    <div class="player-wrap" id="player-wrap">
+      <iframe id="yt-player" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div class="player-overlay" id="overlay">
+        <div class="play-big" onclick="startRadio()">▶</div>
+        <div class="overlay-text">Elige un género y presiona play</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <button class="ctrl-btn" onclick="prevTrack()">◀ PREV</button>
+      <button class="ctrl-btn" onclick="nextTrack()">NEXT ▶</button>
+      <button class="ctrl-btn active" id="btn-auto" onclick="toggleAuto()">AUTO ∞</button>
+      <button class="ctrl-btn" id="btn-mc" onclick="triggerMC()" style="color:var(--amber);border-color:var(--amber);">◈ MC</button>
+      <span class="ctrl-label" id="ctrl-info"></span>
+    </div>
+
+    <!-- MC PANEL -->
+    <div id="mc-panel" style="display:none;margin-bottom:16px;border:1px solid var(--amber);border-radius:4px;overflow:hidden;">
+      <div style="background:rgba(232,121,249,0.08);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(232,121,249,0.2);">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div id="mc-dot" style="width:8px;height:8px;border-radius:50%;background:var(--amber);"></div>
+          <span style="font-size:11px;color:var(--amber);letter-spacing:0.1em;">MC EN EL AIRE</span>
+        </div>
+        <button onclick="stopMC()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--mono);">✕ CORTAR</button>
+      </div>
+      <div id="mc-text" style="padding:14px 16px;font-size:13px;color:var(--white);line-height:1.8;font-family:var(--mono);min-height:60px;"></div>
+    </div>
+
+    <!-- TRACKLIST -->
+    <div class="section-title">Tracklist</div>
+    <div class="track-list" id="tracklist"></div>
+
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker">
+    <span class="ticker-item">REPHLEX RECORDS · <span>APHEX TWIN · LUKE VIBERT · µ-ZIQ · BOGDAN RACZYNSKI</span></span>
+    <span class="ticker-item">JUNGLE · <span>REINFORCED RECORDS · METALHEADZ · MOVING SHADOW · 1993-1997</span></span>
+    <span class="ticker-item">ACID HOUSE · <span>PHUTURE · DJ PIERRE · TRAX RECORDS · CHICAGO 1987</span></span>
+    <span class="ticker-item">BREAKBEAT · <span>SUBURBAN BASE · SHUT UP AND DANCE · HARDCORE RAVE · UK 1991-1994</span></span>
+    <span class="ticker-item">FOOTWORK · <span>RP BOO · TEKLIFE · CHICAGO JUKE · 160BPM · PURE HEAT</span></span>
+    <span class="ticker-item">REPHLEX RECORDS · <span>APHEX TWIN · LUKE VIBERT · µ-ZIQ · BOGDAN RACZYNSKI</span></span>
+    <span class="ticker-item">JUNGLE · <span>REINFORCED RECORDS · METALHEADZ · MOVING SHADOW · 1993-1997</span></span>
+    <span class="ticker-item">ACID HOUSE · <span>PHUTURE · DJ PIERRE · TRAX RECORDS · CHICAGO 1987</span></span>
+    <span class="ticker-item">BREAKBEAT · <span>SUBURBAN BASE · SHUT UP AND DANCE · HARDCORE RAVE · UK 1991-1994</span></span>
+    <span class="ticker-item">FOOTWORK · <span>RP BOO · TEKLIFE · CHICAGO JUKE · 160BPM · PURE HEAT</span></span>
+  </div>
+</div>
+
+<script>
+const GENRES = {
+  rephlex: {
+    label: 'Rephlex Records',
+    tags: ['IDM', 'Acid', 'Braindance'],
+    tracks: [
+      { title: 'Aphex Twin — Selected Ambient Works 85-92 (Full Album)', meta: 'Rephlex / Apollo · 1992', id: 'Xw5AiRVqfqk', dur: '1:14:00' },
+      { title: 'Aphex Twin — ...I Care Because You Do (Full Album)', meta: 'Warp Records · 1995', id: 'WCc1qjMBFdk', dur: '1:05:00' },
+      { title: 'Luke Vibert — Plug — Drum n Bass for Papa (Full)', meta: 'Rephlex · 1996', id: 'TGBhmtGqVuc', dur: '58:00' },
+      { title: 'µ-Ziq — Lunatic Harness (Full Album)', meta: 'Planet Mu · 1997', id: 'fWHRdBPJsfc', dur: '1:02:00' },
+      { title: 'Aphex Twin — Richard D. James Album', meta: 'Warp Records · 1996', id: 'vMBOBE0aB_E', dur: '33:00' },
+      { title: 'Bogdan Raczynski — Samurai Math Beats', meta: 'Rephlex · 1999', id: 'gFuGdPbYCao', dur: '47:00' },
+      { title: 'Aphex Twin — Classic Tracks Mix 90s', meta: 'Selected Works · 1993-1999', id: 'M9xoTygJMMs', dur: '1:30:00' },
+      { title: 'Luke Vibert / Wagon Christ — Throbbing Pouch', meta: 'Rising High · 1995', id: 'Kkx87-1YXGE', dur: '52:00' },
+    ]
+  },
+  acid: {
+    label: 'Acid House',
+    tags: ['Acid', 'Chicago House', 'TB-303'],
+    tracks: [
+      { title: 'Phuture — Acid Tracks (Original 1987)', meta: 'Trax Records · 1987 · El big bang del acid', id: 'za-CN_MQeJY', dur: '10:00' },
+      { title: 'Classic Acid House Mix 1987-1991', meta: 'Trax Records / DJ International', id: '7IHZmakyAcU', dur: '1:00:00' },
+      { title: 'Acid House Classics — Full Mix', meta: 'Chicago / UK · 1988-1993', id: 'GNLqDFJ4H5k', dur: '1:15:00' },
+      { title: 'Larry Heard (Mr. Fingers) — Can You Feel It', meta: 'Trax Records · 1986 · Deep house clásico', id: 'qrHWqFPBzlA', dur: '7:00' },
+      { title: 'Acid House Party — Warp Records Early Years', meta: 'Sheffield UK · 1989-1992', id: 'EkFNz68XSNE', dur: '55:00' },
+      { title: 'DJ Pierre — Wild Pitch Mix (Acid House)', meta: 'Classic Sets · 1989-1993', id: 'Rc_7B0Oevlo', dur: '1:00:00' },
+      { title: 'Acid House Chicago Classics Mix', meta: 'Trax / DJ International · 1986-1991', id: 'fJIgKjFnTls', dur: '1:20:00' },
+    ]
+  },
+  jungle: {
+    label: 'Jungle / Drum & Bass',
+    tags: ['Jungle', 'D&B', 'Rave', 'Pre-1997'],
+    tracks: [
+      { title: 'Old School Jungle Mix 1993-1995', meta: 'Reinforced Records / Moving Shadow', id: 'byoSRf-8MPo', dur: '1:00:00' },
+      { title: 'Goldie — Timeless (Full Album)', meta: 'Metalheadz · 1995 · El disco', id: 'Jm7ZJCM7VM0', dur: '1:37:00' },
+      { title: 'Reinforced Records Classics Mix', meta: '4hero · Marc Mac · Dego · 1992-1996', id: 'LlFB3P1SFnk', dur: '1:00:00' },
+      { title: 'Old School Jungle Hardcore Mix 1993', meta: 'Suburban Base / Reinforced · UK Rave', id: 'GVbewUhKAsc', dur: '1:15:00' },
+      { title: 'Moving Shadow Records Mix', meta: 'Omni Trio / Rob Playford · 1993-1997', id: 'dFb5fXxSJlc', dur: '55:00' },
+      { title: 'Grooverider — Prototype Years Mix', meta: 'Dark Jungle · Metalheadz · 1994-1996', id: '09tSg0zL2cA', dur: '1:00:00' },
+      { title: 'Shut Up and Dance Records Mix', meta: 'UK Jungle Pioneers · 1991-1995', id: 'j3EKXGnzaS4', dur: '1:10:00' },
+      { title: 'LTJ Bukem — Logical Progression Mix', meta: 'Good Looking Records · 1995-1996', id: 'dCNzBVmBBUQ', dur: '1:00:00' },
+    ]
+  },
+  breakbeat: {
+    label: 'Breakbeat Clásico',
+    tags: ['Breakbeat', 'Hardcore', 'Rave', 'UK'],
+    tracks: [
+      { title: 'UK Hardcore Rave Mix 1991-1993', meta: 'Suburban Base / Moving Shadow · Old School', id: '7GWAbKLZzZ0', dur: '1:00:00' },
+      { title: 'Breakbeat Hardcore Classics 1992', meta: 'UK Rave Scene · Essential Mix', id: 'iNMiTGNOsZo', dur: '1:15:00' },
+      { title: 'Prodigy — Music for the Jilted Generation', meta: 'XL Recordings · 1994', id: 'b0Wm1LrXFuI', dur: '1:10:00' },
+      { title: 'Old School Breakbeat Mix 1990-1994', meta: 'UK Rave / Hardcore · Classic Breaks', id: 'pFkI-e2vb2Q', dur: '1:00:00' },
+      { title: 'Amen Break History Mix', meta: 'The break that changed everything · 1991-1996', id: 'V48YBmSSuss', dur: '55:00' },
+      { title: 'Suburban Base Records Classic Mix', meta: 'Essex UK · 1991-1995', id: 'fJIgKjFnTls', dur: '1:20:00' },
+      { title: 'Chemical Brothers — Exit Planet Dust', meta: 'Junior Boy\'s Own · 1995 · Big Beat', id: 'W_GU5Cj-WMU', dur: '51:00' },
+    ]
+  },
+  footwork: {
+    label: 'Juke / Footwork',
+    tags: ['Footwork', 'Juke', 'Chicago', '160BPM'],
+    tracks: [
+      { title: 'Chicago Juke Classics — Early Footwork', meta: 'Chicago South Side · 1990s · Ghetto House', id: 'N-1yM7RB2To', dur: '1:00:00' },
+      { title: 'RP Boo — Classics & Rarities Mix', meta: 'Chicago Footwork Pioneer · 1990s', id: 'nxLQAfmpOZs', dur: '45:00' },
+      { title: 'Chicago Ghetto House Mix 1990s', meta: 'The roots of footwork · DJ Deeon era', id: 'kwBBEijKVDY', dur: '1:00:00' },
+      { title: 'Classic Juke Music Chicago Vol.1', meta: 'Dance Music / Ghetto House · 160BPM', id: 'Ol-4ygIEYh4', dur: '55:00' },
+      { title: 'Early Chicago Footwork & Juke Mix', meta: 'Pre-2000 · Underground Chicago', id: 'V9m-tPNzEj4', dur: '1:00:00' },
+      { title: 'Ghetto House Classics — Chicago 1990s', meta: 'DJ Rashad / Teklife roots · Early sound', id: 'fGgjBBLxmX4', dur: '50:00' },
+    ]
+  }
+};
+
+let currentGenre = 'rephlex';
+let currentIdx = 0;
+let autoplay = true;
+let isPlaying = false;
+let dailyPlaylists = {};
+
+// --- DAILY PLAYLIST SYSTEM ---
+// Uses the date as a seed to shuffle differently each day.
+// Played tracks are saved in localStorage so they never repeat
+// until all tracks in a genre have been played.
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+}
+
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function dateSeed() {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth()+1) * 100 + d.getDate();
+}
+
+function getStorage(key, fallback) {
+  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+}
+
+function setStorage(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+function buildDailyPlaylist(genre) {
+  const today = todayKey();
+  const storageKey = 'ps_playlist_' + genre + '_' + today;
+  const playedKey  = 'ps_played_'   + genre;
+
+  // Load today's playlist from storage or generate a new one
+  let playlist = getStorage(storageKey, null);
+  if (!playlist) {
+    const allIds = GENRES[genre].tracks.map((_, i) => i);
+    let played = getStorage(playedKey, []);
+
+    // If all tracks played, reset history
+    if (played.length >= allIds.length) {
+      played = [];
+      setStorage(playedKey, []);
+    }
+
+    const remaining = allIds.filter(i => !played.includes(i));
+    playlist = seededShuffle(remaining, dateSeed() + genre.charCodeAt(0));
+    setStorage(storageKey, playlist);
+  }
+  return playlist;
+}
+
+function markPlayed(genre, trackIdx) {
+  const played = getStorage('ps_played_' + genre, []);
+  if (!played.includes(trackIdx)) {
+    played.push(trackIdx);
+    setStorage('ps_played_' + genre, played);
+  }
+}
+
+function initAllPlaylists() {
+  Object.keys(GENRES).forEach(g => {
+    dailyPlaylists[g] = buildDailyPlaylist(g);
+  });
+}
+
+function getPlaylistTrack(genre, position) {
+  const playlist = dailyPlaylists[genre];
+  return playlist[position % playlist.length];
+}
+
+function playlistInfo(genre) {
+  const playlist = dailyPlaylists[genre];
+  const played = getStorage('ps_played_' + genre, []);
+  const total = GENRES[genre].tracks.length;
+  return { position: currentIdx, total: playlist.length, playedAll: played.length, totalAll: total };
+}
+
+// --- CORE FUNCTIONS ---
+
+function setGenre(genre) {
+  currentGenre = genre;
+  currentIdx = 0;
+  document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + genre).classList.add('active');
+  renderTracklist();
+  const trackIdx = getPlaylistTrack(genre, 0);
+  loadTrack(trackIdx);
+}
+
+function renderTracklist() {
+  const playlist = dailyPlaylists[currentGenre];
+  const list = document.getElementById('tracklist');
+  list.innerHTML = playlist.map((trackIdx, pos) => {
+    const t = GENRES[currentGenre].tracks[trackIdx];
+    const isCurrentPos = pos === currentIdx;
+    return `
+    <div class="track-item ${isCurrentPos ? 'playing' : ''}" onclick="playPosition(${pos})" id="track-${pos}">
+      <div class="track-num">${String(pos+1).padStart(2,'0')}</div>
+      <div class="eq ${isCurrentPos && isPlaying ? '' : 'hidden'}">
+        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+      </div>
+      <div class="track-info">
+        <div class="track-name">${t.title}</div>
+        <div class="track-sub">${t.meta}</div>
+      </div>
+      <div class="track-duration">${t.dur}</div>
+    </div>`;
+  }).join('');
+}
+
+function playPosition(pos) {
+  currentIdx = pos;
+  const trackIdx = getPlaylistTrack(currentGenre, pos);
+  loadTrack(trackIdx);
+}
+
+function loadTrack(trackIdx) {
+  const track = GENRES[currentGenre].tracks[trackIdx];
+  isPlaying = true;
+  markPlayed(currentGenre, trackIdx);
+
+  document.getElementById('np-title').textContent = track.title;
+  if (!isPlaying) triggerMC(true);
+  document.getElementById('np-meta').textContent = track.meta + ' · Playlist del día ' + todayKey();
+  document.getElementById('overlay').classList.add('hidden');
+
+  const info = playlistInfo(currentGenre);
+  document.getElementById('ctrl-info').textContent =
+    (currentIdx+1) + ' / ' + info.total + ' · ' + info.playedAll + '/' + info.totalAll + ' vistos';
+
+  const freq = document.getElementById('freq-bar');
+  freq.style.display = 'flex';
+  freq.innerHTML = Array.from({length: 48}, (_, i) => {
+    const delay = (Math.random() * 2).toFixed(2);
+    const dur = (0.8 + Math.random() * 1.2).toFixed(2);
+    return `<div class="freq-col" style="animation-delay:${delay}s;animation-duration:${dur}s;"></div>`;
+  }).join('');
+
+  document.getElementById('yt-player').src =
+    `https://www.youtube.com/embed/${track.id}?autoplay=1&controls=1&rel=0&modestbranding=1&iv_load_policy=3`;
+
+  renderTracklist();
+}
+
+function nextTrack() {
+  const playlist = dailyPlaylists[currentGenre];
+  currentIdx = (currentIdx + 1) % playlist.length;
+  const trackIdx = getPlaylistTrack(currentGenre, currentIdx);
+  loadTrack(trackIdx);
+}
+
+function prevTrack() {
+  const playlist = dailyPlaylists[currentGenre];
+  currentIdx = (currentIdx - 1 + playlist.length) % playlist.length;
+  const trackIdx = getPlaylistTrack(currentGenre, currentIdx);
+  loadTrack(trackIdx);
+}
+
+function toggleAuto() {
+  autoplay = !autoplay;
+  const btn = document.getElementById('btn-auto');
+  btn.classList.toggle('active', autoplay);
+  btn.textContent = autoplay ? 'AUTO ∞' : 'AUTO OFF';
+}
+
+function startRadio() {
+  setGenre('rephlex');
+}
+
+function clock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = h + ':' + m + ':' + s + ' · LIVE';
+}
+setInterval(clock, 1000);
+clock();
+
+initAllPlaylists();
+renderTracklist();
+document.getElementById('ctrl-info').textContent = '1 / ' + dailyPlaylists[currentGenre].length;
+
+// --- MC SYSTEM ---
+const MC_SYSTEM = `Eres un MC de radio underground de los 90. Tu estilo es el de un locutor de radio pirata británica o americana de la época — conocimiento enciclopédico, pasión genuina, tono íntimo y directo. Hablas en español con energía contenida, como si estuvieras en el estudio a las 3am. Nunca eres académico ni formal. Usas jerga de la escena: sellos, catálogos, años, nombres de DJs. Eres conciso — máximo 4-5 oraciones. Terminas siempre con una frase que introduce la música que viene.`;
+
+let mcSpeaking = false;
+let mcUtterance = null;
+let iframeVolume = 1;
+
+function checkApiKey() {
+  const key = document.getElementById('api-key').value.trim();
+  const status = document.getElementById('api-status');
+  const mcBtn = document.getElementById('btn-mc');
+  if (key.startsWith('sk-ant-') && key.length > 20) {
+    status.textContent = '✓ MC activado';
+    status.style.color = '#c084fc';
+    mcBtn.style.opacity = '1';
+  } else if (key.length > 0) {
+    status.textContent = 'Key inválida';
+    status.style.color = '#f472b6';
+  } else {
+    status.textContent = 'Ingresa key para activar MC';
+    status.style.color = '';
+    mcBtn.style.opacity = '0.4';
+  }
+}
+
+function getApiKey() {
+  return document.getElementById('api-key').value.trim();
+}
+
+function mutePlayer() {
+  const iframe = document.getElementById('yt-player');
+  iframe.style.opacity = '0.3';
+}
+
+function unmutePlayer() {
+  const iframe = document.getElementById('yt-player');
+  iframe.style.opacity = '1';
+}
+
+function stopMC() {
+  if (mcUtterance) speechSynthesis.cancel();
+  mcSpeaking = false;
+  document.getElementById('mc-panel').style.display = 'none';
+  document.getElementById('mc-dot').style.animation = '';
+  unmutePlayer();
+}
+
+async function triggerMC(auto = false) {
+  const key = getApiKey();
+  if (!key || !key.startsWith('sk-ant-')) {
+    if (!auto) alert('Ingresa tu API key de Anthropic en el panel izquierdo para activar el MC.');
+    return;
+  }
+
+  if (mcSpeaking) stopMC();
+
+  const track = GENRES[currentGenre].tracks[getPlaylistTrack(currentGenre, currentIdx)];
+  const genre = GENRES[currentGenre].label;
+
+  const panel = document.getElementById('mc-panel');
+  const textEl = document.getElementById('mc-text');
+  panel.style.display = 'block';
+  textEl.textContent = '...';
+  mutePlayer();
+
+  const dot = document.getElementById('mc-dot');
+  dot.style.animation = 'pulse 0.8s infinite';
+
+  const prompt = `Estás en el aire en una radio underground 24/7 de música electrónica de los 90. Acaba de terminar un track y está por sonar: ${track.title} del género ${genre}. 
+
+Habla máximo 4-5 oraciones sobre: el artista o sello, un dato freak de la época, el contexto underground. Termina con una frase que introduzca el track que viene. Tono: radio pirata nocturna, íntimo, experto, apasionado. En español.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: MC_SYSTEM,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Sin señal...';
+    textEl.textContent = text;
+
+    // Speak with Web Speech API
+    if ('speechSynthesis' in window) {
+      mcSpeaking = true;
+      mcUtterance = new SpeechSynthesisUtterance(text);
+      mcUtterance.lang = 'es-ES';
+      mcUtterance.rate = 0.95;
+      mcUtterance.pitch = 0.9;
+
+      // Pick a good Spanish voice if available
+      const voices = speechSynthesis.getVoices();
+      const spanish = voices.find(v => v.lang.startsWith('es') && v.name.toLowerCase().includes('male'))
+        || voices.find(v => v.lang.startsWith('es'))
+        || voices[0];
+      if (spanish) mcUtterance.voice = spanish;
+
+      mcUtterance.onend = () => {
+        mcSpeaking = false;
+        setTimeout(() => {
+          document.getElementById('mc-panel').style.display = 'none';
+          unmutePlayer();
+        }, 1200);
+      };
+      speechSynthesis.speak(mcUtterance);
+    }
+  } catch(e) {
+    textEl.textContent = 'Error de señal: ' + e.message;
+    setTimeout(stopMC, 3000);
+  }
+}
+
+</script>
+</body>
+</html>
