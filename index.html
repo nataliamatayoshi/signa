@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIRATE SIGNAL — 90s Underground Radio</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07050f;
+    --green: #c084fc;
+    --green-dim: rgba(192,132,252,0.08);
+    --green-mid: rgba(192,132,252,0.35);
+    --amber: #e879f9;
+    --amber-dim: rgba(232,121,249,0.1);
+    --red: #f472b6;
+    --white: #ede8f5;
+    --muted: #4a3f5c;
+    --surface: #0d0a18;
+    --border: rgba(192,132,252,0.18);
+    --mono: 'Share Tech Mono', monospace;
+    --vt: 'VT323', monospace;
+    --space: 'Space Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SCANLINES */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none; z-index: 999;
+  }
+
+  /* NOISE overlay */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 998; opacity: 0.4;
+  }
+
+  /* HEADER */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0.4;
+  }
+
+  .logo {
+    font-family: var(--vt);
+    font-size: 36px;
+    letter-spacing: 4px;
+    color: var(--green);
+    text-shadow: 0 0 20px rgba(192,132,252,0.6), 0 0 40px rgba(192,132,252,0.2);
+    animation: flicker 8s infinite;
+  }
+  .logo span { color: var(--amber); }
+
+  @keyframes flicker {
+    0%,95%,97%,100% { opacity: 1; }
+    96% { opacity: 0.7; }
+    96.5% { opacity: 1; }
+  }
+
+  .header-right { text-align: right; font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--red); font-size: 12px; font-family: var(--space);
+    letter-spacing: 0.1em;
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--red);
+    animation: pulse 1.2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* MAIN LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: calc(100vh - 70px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-title {
+    font-size: 10px; letter-spacing: 0.15em; color: var(--muted);
+    padding: 0 18px; margin-bottom: 10px; text-transform: uppercase;
+  }
+
+  .genre-btn {
+    width: 100%; padding: 12px 18px;
+    background: none; border: none;
+    color: var(--muted); font-family: var(--mono); font-size: 13px;
+    cursor: pointer; text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .genre-btn:hover { color: var(--green); background: var(--green-dim); }
+  .genre-btn.active {
+    color: var(--green); background: var(--green-dim);
+    border-left-color: var(--green);
+  }
+  .genre-btn .count {
+    font-size: 10px; color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    padding: 2px 6px; border-radius: 3px;
+  }
+  .genre-btn.active .count { color: var(--green-mid); }
+
+  .sidebar-sep {
+    height: 1px; background: var(--border); margin: 12px 0;
+  }
+
+  /* MAIN PLAYER */
+  .main { padding: 24px; overflow-y: auto; }
+
+  /* NOW PLAYING */
+  .now-playing {
+    border: 1px solid var(--border);
+    background: var(--green-dim);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .now-icon { font-family: var(--vt); font-size: 28px; color: var(--amber); flex-shrink: 0; line-height: 1; margin-top: 2px; }
+  .now-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .now-title { font-size: 15px; color: var(--white); line-height: 1.4; }
+  .now-meta { font-size: 11px; color: var(--green-mid); margin-top: 4px; }
+
+  /* PLAYER EMBED */
+  .player-wrap {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    background: #000;
+    position: relative;
+  }
+  .player-wrap iframe {
+    display: block; width: 100%; height: 200px; border: none;
+  }
+  .player-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.85);
+    flex-direction: column; gap: 12px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .player-overlay.hidden { opacity: 0; pointer-events: none; }
+  .play-big {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 2px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    transition: all 0.15s;
+    color: var(--green);
+  }
+  .play-big:hover { background: var(--green-dim); transform: scale(1.05); }
+  .overlay-text { font-size: 13px; color: var(--green-mid); }
+
+  /* TRACKLIST */
+  .section-title {
+    font-size: 10px; letter-spacing: 0.12em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .track-list { display: flex; flex-direction: column; gap: 4px; }
+  .track-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 3px;
+    cursor: pointer; border: 1px solid transparent;
+    transition: all 0.12s;
+  }
+  .track-item:hover { background: var(--green-dim); border-color: var(--border); }
+  .track-item.playing {
+    background: var(--green-dim); border-color: var(--border);
+    border-left: 2px solid var(--green);
+  }
+  .track-num {
+    font-size: 11px; color: var(--muted); width: 20px; text-align: right; flex-shrink: 0;
+  }
+  .track-item.playing .track-num { color: var(--green); }
+  .track-info { flex: 1; min-width: 0; }
+  .track-name { font-size: 13px; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .track-item.playing .track-name { color: var(--green); }
+  .track-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .track-duration { font-size: 11px; color: var(--muted); flex-shrink: 0; font-family: var(--space); }
+
+  /* EQ BARS (playing indicator) */
+  .eq { display: flex; align-items: flex-end; gap: 2px; height: 14px; width: 14px; flex-shrink: 0; }
+  .eq-bar {
+    width: 3px; background: var(--green); border-radius: 1px;
+    animation: eq-anim 0.8s ease-in-out infinite alternate;
+  }
+  .eq-bar:nth-child(1) { animation-delay: 0s; }
+  .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+  .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes eq-anim {
+    from { height: 3px; }
+    to { height: 14px; }
+  }
+  .eq.hidden { display: none; }
+
+  /* FREQ DISPLAY */
+  .freq-bar {
+    height: 40px; margin-bottom: 20px;
+    display: flex; align-items: flex-end; gap: 2px;
+    overflow: hidden;
+  }
+  .freq-col {
+    flex: 1; background: var(--green);
+    opacity: 0.6; border-radius: 1px 1px 0 0;
+    animation: freq 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes freq {
+    from { height: 20%; }
+    to { height: 90%; }
+  }
+
+  /* WAVEFORM */
+  canvas { width: 100%; height: 40px; display: block; margin-bottom: 16px; opacity: 0.6; }
+
+  /* GENRE TAG */
+  .genre-tag {
+    display: inline-block; padding: 3px 8px;
+    border: 1px solid var(--border); border-radius: 2px;
+    font-size: 10px; color: var(--muted); letter-spacing: 0.08em;
+    margin-right: 4px; margin-bottom: 4px; text-transform: uppercase;
+  }
+
+  /* FOOTER TICKER */
+  .ticker-wrap {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    padding: 8px 0;
+    overflow: hidden;
+    z-index: 100;
+  }
+  .ticker {
+    display: flex; gap: 60px;
+    animation: scroll-left 40s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .ticker-item { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+  .ticker-item span { color: var(--green-mid); }
+
+  /* AUTOPLAY CONTROLS */
+  .controls {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .ctrl-btn {
+    padding: 7px 14px; border: 1px solid var(--border);
+    background: none; color: var(--green); font-family: var(--mono); font-size: 12px;
+    cursor: pointer; border-radius: 2px; transition: all 0.12s; letter-spacing: 0.05em;
+  }
+  .ctrl-btn:hover { background: var(--green-dim); }
+  .ctrl-btn.active { background: var(--green-dim); border-color: var(--green); }
+  .ctrl-label { font-size: 11px; color: var(--muted); }
+
+  /* MOBILE */
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); padding: 12px 0; }
+    .genre-btn { padding: 10px 14px; font-size: 12px; }
+    .main { padding: 16px; }
+    .logo { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">PIRATE<span>.</span>SIGNAL</div>
+    <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-top:2px;">90s UNDERGROUND ELECTRONIC RADIO</div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div> ON AIR 24/7</div>
+    <div style="margin-top:4px;">REPHLEX · JUNGLE · ACID · BREAKBEAT · FOOTWORK</div>
+    <div id="clock" style="color:var(--green);margin-top:2px;"></div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-title">Géneros</div>
+
+    <button class="genre-btn active" onclick="setGenre('rephlex')" id="btn-rephlex">
+      REPHLEX RECORDS <span class="count">8</span>
+    </button>
+    <button class="genre-btn" onclick="setGenre('acid')" id="btn-acid">
+      ACID HOUSE <span class="count">7</span>
+    </button>
+    <button class="genre-btn" onclick="setGenre('jungle')" id="btn-jungle">
+      JUNGLE / D&B <span class="count">8</span>
+    </button>
+    <button class="genre-btn" onclick="setGenre('breakbeat')" id="btn-breakbeat">
+      BREAKBEAT <span class="count">7</span>
+    </button>
+    <button class="genre-btn" onclick="setGenre('footwork')" id="btn-footwork">
+      JUKE / FOOTWORK <span class="count">6</span>
+    </button>
+
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-title">Info</div>
+    <div style="padding:0 18px;font-size:11px;color:var(--muted);line-height:1.8;">
+      Música reproducida vía<br>YouTube embeds.<br><br>
+      Todo material pre-2000.<br>
+      Sets, mixes y tracks<br>clásicos de la escena.
+      <br><br>
+      <span style="color:var(--green-mid);">Sin registro · Gratis · 24/7</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" style="padding-bottom:60px;">
+
+    <!-- NOW PLAYING -->
+    <div class="now-playing">
+      <div class="now-icon">▶</div>
+      <div>
+        <div class="now-label">Reproduciendo ahora</div>
+        <div class="now-title" id="np-title">Selecciona un género para comenzar</div>
+        <div class="now-meta" id="np-meta"></div>
+      </div>
+    </div>
+
+    <!-- FREQ VISUALIZER -->
+    <div class="freq-bar" id="freq-bar" style="display:none;">
+    </div>
+
+    <!-- PLAYER -->
+    <div class="player-wrap" id="player-wrap">
+      <iframe id="yt-player" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div class="player-overlay" id="overlay">
+        <div class="play-big" onclick="startRadio()">▶</div>
+        <div class="overlay-text">Elige un género y presiona play</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <button class="ctrl-btn" onclick="prevTrack()">◀ PREV</button>
+      <button class="ctrl-btn" onclick="nextTrack()">NEXT ▶</button>
+      <button class="ctrl-btn active" id="btn-auto" onclick="toggleAuto()">AUTO ∞</button>
+      <span class="ctrl-label" id="ctrl-info"></span>
+    </div>
+
+    <!-- TRACKLIST -->
+    <div class="section-title">Tracklist</div>
+    <div class="track-list" id="tracklist"></div>
+
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker">
+    <span class="ticker-item">REPHLEX RECORDS · <span>APHEX TWIN · LUKE VIBERT · µ-ZIQ · BOGDAN RACZYNSKI</span></span>
+    <span class="ticker-item">JUNGLE · <span>REINFORCED RECORDS · METALHEADZ · MOVING SHADOW · 1993-1997</span></span>
+    <span class="ticker-item">ACID HOUSE · <span>PHUTURE · DJ PIERRE · TRAX RECORDS · CHICAGO 1987</span></span>
+    <span class="ticker-item">BREAKBEAT · <span>SUBURBAN BASE · SHUT UP AND DANCE · HARDCORE RAVE · UK 1991-1994</span></span>
+    <span class="ticker-item">FOOTWORK · <span>RP BOO · TEKLIFE · CHICAGO JUKE · 160BPM · PURE HEAT</span></span>
+    <span class="ticker-item">REPHLEX RECORDS · <span>APHEX TWIN · LUKE VIBERT · µ-ZIQ · BOGDAN RACZYNSKI</span></span>
+    <span class="ticker-item">JUNGLE · <span>REINFORCED RECORDS · METALHEADZ · MOVING SHADOW · 1993-1997</span></span>
+    <span class="ticker-item">ACID HOUSE · <span>PHUTURE · DJ PIERRE · TRAX RECORDS · CHICAGO 1987</span></span>
+    <span class="ticker-item">BREAKBEAT · <span>SUBURBAN BASE · SHUT UP AND DANCE · HARDCORE RAVE · UK 1991-1994</span></span>
+    <span class="ticker-item">FOOTWORK · <span>RP BOO · TEKLIFE · CHICAGO JUKE · 160BPM · PURE HEAT</span></span>
+  </div>
+</div>
+
+<script>
+const GENRES = {
+  rephlex: {
+    label: 'Rephlex Records',
+    tags: ['IDM', 'Acid', 'Braindance'],
+    tracks: [
+      { title: 'Aphex Twin — Selected Ambient Works 85-92 (Full Album)', meta: 'Rephlex / Apollo · 1992', id: 'Xw5AiRVqfqk', dur: '1:14:00' },
+      { title: 'Aphex Twin — ...I Care Because You Do (Full Album)', meta: 'Warp Records · 1995', id: 'WCc1qjMBFdk', dur: '1:05:00' },
+      { title: 'Luke Vibert — Plug — Drum n Bass for Papa (Full)', meta: 'Rephlex · 1996', id: 'TGBhmtGqVuc', dur: '58:00' },
+      { title: 'µ-Ziq — Lunatic Harness (Full Album)', meta: 'Planet Mu · 1997', id: 'fWHRdBPJsfc', dur: '1:02:00' },
+      { title: 'Aphex Twin — Richard D. James Album', meta: 'Warp Records · 1996', id: 'vMBOBE0aB_E', dur: '33:00' },
+      { title: 'Bogdan Raczynski — Samurai Math Beats', meta: 'Rephlex · 1999', id: 'gFuGdPbYCao', dur: '47:00' },
+      { title: 'Aphex Twin — Classic Tracks Mix 90s', meta: 'Selected Works · 1993-1999', id: 'M9xoTygJMMs', dur: '1:30:00' },
+      { title: 'Luke Vibert / Wagon Christ — Throbbing Pouch', meta: 'Rising High · 1995', id: 'Kkx87-1YXGE', dur: '52:00' },
+    ]
+  },
+  acid: {
+    label: 'Acid House',
+    tags: ['Acid', 'Chicago House', 'TB-303'],
+    tracks: [
+      { title: 'Phuture — Acid Tracks (Original 1987)', meta: 'Trax Records · 1987 · El big bang del acid', id: 'za-CN_MQeJY', dur: '10:00' },
+      { title: 'Classic Acid House Mix 1987-1991', meta: 'Trax Records / DJ International', id: '7IHZmakyAcU', dur: '1:00:00' },
+      { title: 'Acid House Classics — Full Mix', meta: 'Chicago / UK · 1988-1993', id: 'GNLqDFJ4H5k', dur: '1:15:00' },
+      { title: 'Larry Heard (Mr. Fingers) — Can You Feel It', meta: 'Trax Records · 1986 · Deep house clásico', id: 'qrHWqFPBzlA', dur: '7:00' },
+      { title: 'Acid House Party — Warp Records Early Years', meta: 'Sheffield UK · 1989-1992', id: 'EkFNz68XSNE', dur: '55:00' },
+      { title: 'DJ Pierre — Wild Pitch Mix (Acid House)', meta: 'Classic Sets · 1989-1993', id: 'Rc_7B0Oevlo', dur: '1:00:00' },
+      { title: 'Acid House Chicago Classics Mix', meta: 'Trax / DJ International · 1986-1991', id: 'fJIgKjFnTls', dur: '1:20:00' },
+    ]
+  },
+  jungle: {
+    label: 'Jungle / Drum & Bass',
+    tags: ['Jungle', 'D&B', 'Rave', 'Pre-1997'],
+    tracks: [
+      { title: 'Old School Jungle Mix 1993-1995', meta: 'Reinforced Records / Moving Shadow', id: 'byoSRf-8MPo', dur: '1:00:00' },
+      { title: 'Goldie — Timeless (Full Album)', meta: 'Metalheadz · 1995 · El disco', id: 'Jm7ZJCM7VM0', dur: '1:37:00' },
+      { title: 'Reinforced Records Classics Mix', meta: '4hero · Marc Mac · Dego · 1992-1996', id: 'LlFB3P1SFnk', dur: '1:00:00' },
+      { title: 'Old School Jungle Hardcore Mix 1993', meta: 'Suburban Base / Reinforced · UK Rave', id: 'GVbewUhKAsc', dur: '1:15:00' },
+      { title: 'Moving Shadow Records Mix', meta: 'Omni Trio / Rob Playford · 1993-1997', id: 'dFb5fXxSJlc', dur: '55:00' },
+      { title: 'Grooverider — Prototype Years Mix', meta: 'Dark Jungle · Metalheadz · 1994-1996', id: '09tSg0zL2cA', dur: '1:00:00' },
+      { title: 'Shut Up and Dance Records Mix', meta: 'UK Jungle Pioneers · 1991-1995', id: 'j3EKXGnzaS4', dur: '1:10:00' },
+      { title: 'LTJ Bukem — Logical Progression Mix', meta: 'Good Looking Records · 1995-1996', id: 'dCNzBVmBBUQ', dur: '1:00:00' },
+    ]
+  },
+  breakbeat: {
+    label: 'Breakbeat Clásico',
+    tags: ['Breakbeat', 'Hardcore', 'Rave', 'UK'],
+    tracks: [
+      { title: 'UK Hardcore Rave Mix 1991-1993', meta: 'Suburban Base / Moving Shadow · Old School', id: '7GWAbKLZzZ0', dur: '1:00:00' },
+      { title: 'Breakbeat Hardcore Classics 1992', meta: 'UK Rave Scene · Essential Mix', id: 'iNMiTGNOsZo', dur: '1:15:00' },
+      { title: 'Prodigy — Music for the Jilted Generation', meta: 'XL Recordings · 1994', id: 'b0Wm1LrXFuI', dur: '1:10:00' },
+      { title: 'Old School Breakbeat Mix 1990-1994', meta: 'UK Rave / Hardcore · Classic Breaks', id: 'pFkI-e2vb2Q', dur: '1:00:00' },
+      { title: 'Amen Break History Mix', meta: 'The break that changed everything · 1991-1996', id: 'V48YBmSSuss', dur: '55:00' },
+      { title: 'Suburban Base Records Classic Mix', meta: 'Essex UK · 1991-1995', id: 'fJIgKjFnTls', dur: '1:20:00' },
+      { title: 'Chemical Brothers — Exit Planet Dust', meta: 'Junior Boy\'s Own · 1995 · Big Beat', id: 'W_GU5Cj-WMU', dur: '51:00' },
+    ]
+  },
+  footwork: {
+    label: 'Juke / Footwork',
+    tags: ['Footwork', 'Juke', 'Chicago', '160BPM'],
+    tracks: [
+      { title: 'Chicago Juke Classics — Early Footwork', meta: 'Chicago South Side · 1990s · Ghetto House', id: 'N-1yM7RB2To', dur: '1:00:00' },
+      { title: 'RP Boo — Classics & Rarities Mix', meta: 'Chicago Footwork Pioneer · 1990s', id: 'nxLQAfmpOZs', dur: '45:00' },
+      { title: 'Chicago Ghetto House Mix 1990s', meta: 'The roots of footwork · DJ Deeon era', id: 'kwBBEijKVDY', dur: '1:00:00' },
+      { title: 'Classic Juke Music Chicago Vol.1', meta: 'Dance Music / Ghetto House · 160BPM', id: 'Ol-4ygIEYh4', dur: '55:00' },
+      { title: 'Early Chicago Footwork & Juke Mix', meta: 'Pre-2000 · Underground Chicago', id: 'V9m-tPNzEj4', dur: '1:00:00' },
+      { title: 'Ghetto House Classics — Chicago 1990s', meta: 'DJ Rashad / Teklife roots · Early sound', id: 'fGgjBBLxmX4', dur: '50:00' },
+    ]
+  }
+};
+
+let currentGenre = 'rephlex';
+let currentIdx = 0;
+let autoplay = true;
+let isPlaying = false;
+
+function setGenre(genre) {
+  currentGenre = genre;
+  currentIdx = 0;
+  document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + genre).classList.add('active');
+  renderTracklist();
+  loadTrack(0);
+}
+
+function renderTracklist() {
+  const tracks = GENRES[currentGenre].tracks;
+  const list = document.getElementById('tracklist');
+  list.innerHTML = tracks.map((t, i) => `
+    <div class="track-item ${i === currentIdx ? 'playing' : ''}" onclick="loadTrack(${i})" id="track-${i}">
+      <div class="track-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="eq ${i === currentIdx && isPlaying ? '' : 'hidden'}">
+        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+      </div>
+      <div class="track-info">
+        <div class="track-name">${t.title}</div>
+        <div class="track-sub">${t.meta}</div>
+      </div>
+      <div class="track-duration">${t.dur}</div>
+    </div>
+  `).join('');
+}
+
+function loadTrack(idx) {
+  const tracks = GENRES[currentGenre].tracks;
+  currentIdx = idx;
+  const track = tracks[idx];
+  isPlaying = true;
+
+  document.getElementById('np-title').textContent = track.title;
+  document.getElementById('np-meta').textContent = track.meta;
+  document.getElementById('overlay').classList.add('hidden');
+  document.getElementById('ctrl-info').textContent = (idx+1) + ' / ' + tracks.length;
+
+  const freq = document.getElementById('freq-bar');
+  freq.style.display = 'flex';
+  freq.innerHTML = Array.from({length: 48}, (_, i) => {
+    const delay = (Math.random() * 2).toFixed(2);
+    const dur = (0.8 + Math.random() * 1.2).toFixed(2);
+    return `<div class="freq-col" style="animation-delay:${delay}s;animation-duration:${dur}s;"></div>`;
+  }).join('');
+
+  document.getElementById('yt-player').src =
+    `https://www.youtube.com/embed/${track.id}?autoplay=1&controls=1&rel=0&modestbranding=1&iv_load_policy=3`;
+
+  renderTracklist();
+}
+
+function nextTrack() {
+  const tracks = GENRES[currentGenre].tracks;
+  const next = (currentIdx + 1) % tracks.length;
+  loadTrack(next);
+}
+
+function prevTrack() {
+  const tracks = GENRES[currentGenre].tracks;
+  const prev = (currentIdx - 1 + tracks.length) % tracks.length;
+  loadTrack(prev);
+}
+
+function toggleAuto() {
+  autoplay = !autoplay;
+  const btn = document.getElementById('btn-auto');
+  btn.classList.toggle('active', autoplay);
+  btn.textContent = autoplay ? 'AUTO ∞' : 'AUTO OFF';
+}
+
+function startRadio() {
+  setGenre('rephlex');
+}
+
+function clock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = h + ':' + m + ':' + s + ' · LIVE';
+}
+setInterval(clock, 1000);
+clock();
+
+renderTracklist();
+document.getElementById('ctrl-info').textContent = '1 / ' + GENRES[currentGenre].tracks.length;
+</script>
+</body>
+</html>
